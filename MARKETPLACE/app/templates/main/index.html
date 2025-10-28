@@ -1,0 +1,652 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Welcome to Campus Marketplace</h1>
+        <p class="hero-subtitle">Your trusted platform to buy and sell items within your campus community. Safe, reliable, and student-focused.</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('products.all_products') }}" class="btn btn-primary">
+                <i class="fas fa-shopping-bag"></i>Shop Now
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="btn btn-secondary">
+                    <i class="fas fa-plus"></i>Sell Item
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i>Join Now
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="hero-image">
+        <div class="floating-cards">
+            <div class="floating-card card-1">
+                <i class="fas fa-laptop"></i>
+                <span>Electronics</span>
+            </div>
+            <div class="floating-card card-2">
+                <i class="fas fa-book"></i>
+                <span>Books</span>
+            </div>
+            <div class="floating-card card-3">
+                <i class="fas fa-couch"></i>
+                <span>Furniture</span>
+            </div>
+            <div class="floating-card card-4">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Gadgets</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-container">
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">500+</h3>
+                <p class="stat-label">Active Students</p>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">1,200+</h3>
+                <p class="stat-label">Items Sold</p>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">98%</h3>
+                <p class="stat-label">Satisfaction Rate</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fast Moving Items Section -->
+<section class="products-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-bolt"></i>
+            Fast Moving Items
+        </h2>
+        <p class="section-subtitle">Hot deals that won't last long! Grab them before they're gone.</p>
+    </div>
+
+    {% if fast_moving %}
+        <div class="products-grid">
+            {% for product in fast_moving %}
+                <div class="product-card">
+                    <div class="product-badge">
+                        <i class="fas fa-bolt"></i>
+                        Hot Deal
+                    </div>
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
+                        {% else %}
+                            <div class="product-image-placeholder">
+                                <i class="fas fa-camera"></i>
+                                <span>No Image</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="product-content">
+                        <h3 class="product-title">{{ product.title }}</h3>
+                        <p class="product-description">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                        
+                        <div class="product-meta">
+                            <div class="product-condition">
+                                <i class="fas fa-tag"></i>
+                                {{ product.condition|title }}
+                            </div>
+                            <div class="product-category">
+                                <i class="fas fa-layer-group"></i>
+                                {{ product.category.name if product.category else 'General' }}
+                            </div>
+                        </div>
+                        
+                        <div class="product-footer">
+                            <div class="product-price">
+                                KES {{ "{:,.2f}".format(product.price) }}
+                            </div>
+                            <a href="{{ url_for('products.view_product', product_id=product.id) }}" class="btn-view">
+                                <i class="fas fa-eye"></i>
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <h3>No Fast Moving Items Yet</h3>
+            <p>Be the first to list your item and get featured here!</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>List Your First Item
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>Join to Start Selling
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="section-header">
+        <h2 class="section-title">Why Choose CampusMarket?</h2>
+        <p class="section-subtitle">We make buying and selling on campus simple and secure</p>
+    </div>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Secure Payments</h3>
+            <p>Safe and reliable payment options including M-Pesa and campus tokens with buyer protection.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h3>Fast Delivery</h3>
+            <p>Quick campus-wide delivery and meetup options. Get your items within hours, not days.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Campus Community</h3>
+            <p>Buy and sell within your trusted campus network. Verified students only for your safety.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-tags"></i>
+            </div>
+            <h3>Best Prices</h3>
+            <p>Get student-friendly prices on textbooks, electronics, furniture, and everything in between.</p>
+        </div>
+    </div>
+</section>
+
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-dark: #2563eb;
+        --secondary: #f59e0b;
+        --dark: #111827;
+        --darker: #0f1420;
+        --light: #1f2937;
+        --lighter: #374151;
+        --gray: #9ca3af;
+        --gray-light: #4b5563;
+        --success: #10b981;
+        --error: #ef4444;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --radius: 8px;
+    }
+
+    body {
+        background-color: var(--dark);
+        color: #e5e7eb;
+    }
+
+    /* Hero Section */
+    .hero {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+        padding: 4rem 0;
+        background: linear-gradient(135deg, var(--darker) 0%, var(--light) 100%);
+        border-radius: var(--radius);
+        margin-bottom: 4rem;
+    }
+
+    .hero-content {
+        padding: 0 2rem;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--gray);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        background: var(--light);
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+
+    .btn-secondary:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Floating Cards Animation */
+    .floating-cards {
+        position: relative;
+        height: 300px;
+    }
+
+    .floating-card {
+        position: absolute;
+        background: var(--light);
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        color: #e5e7eb;
+        animation: float 3s ease-in-out infinite;
+        border: 1px solid var(--gray-light);
+    }
+
+    .floating-card i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    .card-1 { top: 20px; left: 20px; animation-delay: 0s; }
+    .card-2 { top: 80px; right: 40px; animation-delay: 0.5s; }
+    .card-3 { bottom: 80px; left: 40px; animation-delay: 1s; }
+    .card-4 { bottom: 20px; right: 20px; animation-delay: 1.5s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: var(--light);
+        padding: 3rem 0;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 4rem;
+        border: 1px solid var(--gray-light);
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-align: left;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #e5e7eb;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--gray);
+        font-weight: 500;
+    }
+
+    /* Section Headers */
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #e5e7eb;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .section-title i {
+        color: var(--secondary);
+    }
+
+    .section-subtitle {
+        font-size: 1.125rem;
+        color: var(--gray);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Products Grid */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .product-card {
+        background: var(--light);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        border: 1px solid var(--gray-light);
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        border-color: var(--primary);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: var(--secondary);
+        color: var(--dark);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 2;
+    }
+
+    .product-image {
+        height: 200px;
+        background: var(--lighter);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-image-placeholder {
+        text-align: center;
+        color: var(--gray);
+    }
+
+    .product-image-placeholder i {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-content {
+        padding: 1.5rem;
+    }
+
+    .product-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-description {
+        color: var(--gray);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .product-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .product-condition, .product-category {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--gray);
+    }
+
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        border-radius: var(--radius);
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--light);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-light);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--gray-light);
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        color: #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: var(--gray);
+        margin-bottom: 2rem;
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 4rem 0;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .feature-card {
+        text-align: center;
+        padding: 2rem;
+        background: var(--light);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        border: 1px solid var(--gray-light);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        border-color: var(--primary);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+        font-size: 2rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+        color: var(--gray);
+        line-height: 1.6;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-buttons {
+            justify-content: center;
+        }
+
+        .floating-cards {
+            height: 200px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-container {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-item {
+            justify-content: center;
+            text-align: center;
+        }
+    }
+</style>
+</script>
+{% endblock %}
