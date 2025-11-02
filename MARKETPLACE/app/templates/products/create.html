@@ -313,30 +313,47 @@
                             </p>
                             
                             <div class="payment-options">
-                                <label class="radio-container">
-                                    <input type="radio" name="payment_method" value="mpesa" required>
-                                    <span class="radio-checkmark"></span>
-                                    <div class="option-content">
-                                        <div class="option-title">
-                                            <i class="fas fa-mobile-alt"></i>
-                                            M-Pesa
-                                        </div>
-                                        <div class="option-desc">Pay instantly via M-Pesa</div>
-                                    </div>
-                                </label>
-                                
-                                <label class="radio-container">
-                                    <input type="radio" name="payment_method" value="token" required>
-                                    <span class="radio-checkmark"></span>
-                                    <div class="option-content">
-                                        <div class="option-title">
-                                            <i class="fas fa-coins"></i>
-                                            Campus Token
-                                        </div>
-                                        <div class="option-desc">Pay with your campus tokens</div>
-                                    </div>
-                                </label>
-                            </div>
+    <label class="radio-container">
+        <input type="radio" name="payment_method" value="mpesa" required>
+        <span class="radio-checkmark"></span>
+        <div class="option-content">
+            <div class="option-title">
+                <i class="fas fa-mobile-alt"></i>
+                M-Pesa
+            </div>
+            <div class="option-desc">Pay instantly via M-Pesa</div>
+            <div class="option-fields" id="mpesaFields">
+                <div class="form-group">
+                    <label for="mpesa_phone" class="form-label">
+                        <i class="fas fa-phone"></i>
+                        M-Pesa Phone Number *
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="mpesa_phone"
+                        name="mpesa_phone" 
+                        class="form-input" 
+                        placeholder="e.g., 0712345678"
+                        pattern="[0-9]{10,12}"
+                    >
+                    <div class="form-hint">Enter your M-Pesa registered phone number</div>
+                </div>
+            </div>
+        </div>
+    </label>
+    
+    <label class="radio-container">
+        <input type="radio" name="payment_method" value="token" required>
+        <span class="radio-checkmark"></span>
+        <div class="option-content">
+            <div class="option-title">
+                <i class="fas fa-coins"></i>
+                Campus Token
+            </div>
+            <div class="option-desc">Pay with your campus tokens</div>
+        </div>
+    </label>
+</div>
                         </div>
                     </div>
                 </div>
@@ -1002,8 +1019,19 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Product creation page loaded');
         
-        // Wizard navigation
+        // Initialize steps - show only first step, hide others
         const steps = document.querySelectorAll('.form-step');
+        steps.forEach((step, index) => {
+            if (index === 0) {
+                step.style.display = 'block';
+                step.classList.add('active');
+            } else {
+                step.style.display = 'none';
+                step.classList.remove('active');
+            }
+        });
+
+        // Wizard navigation
         const stepButtons = document.querySelectorAll('.wizard-steps .step');
         
         // Next button functionality
@@ -1018,8 +1046,14 @@
                 
                 if (validateStep(currentStepNum)) {
                     console.log('Validation passed, moving to next step');
+                    
+                    // Hide current step
+                    currentStep.style.display = 'none';
                     currentStep.classList.remove('active');
+                    
+                    // Show next step
                     if (nextStep) {
+                        nextStep.style.display = 'block';
                         nextStep.classList.add('active');
                     }
                     
@@ -1052,8 +1086,13 @@
                 
                 console.log('Moving back to step', prevStepNum);
                 
+                // Hide current step
+                currentStep.style.display = 'none';
                 currentStep.classList.remove('active');
+                
+                // Show previous step
                 if (prevStep) {
+                    prevStep.style.display = 'block';
                     prevStep.classList.add('active');
                 }
                 
@@ -1068,7 +1107,7 @@
             });
         });
         
-        // Image upload functionality - SIMPLIFIED VERSION
+        // Image upload functionality
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('image');
         const imagePreview = document.getElementById('imagePreview');
@@ -1121,72 +1160,93 @@
         }
         
         function handleImageUpload(file) {
-            console.log('Handling image upload:', file);
-            
-            if (!file) {
-                console.log('No file provided');
-                return;
-            }
-            
-            // Check if it's an image
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file (JPEG, PNG, GIF, etc.)');
-                return;
-            }
-            
-            // Check file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Image size must be less than 5MB. Your file is ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
-                return;
-            }
-            
-            // Create preview
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                console.log('File read successfully');
-                
-                // Clear previous previews
-                if (imagePreview) {
-                    imagePreview.innerHTML = '';
-                }
-                
-                // Create preview container
-                const previewItem = document.createElement('div');
-                previewItem.className = 'preview-item';
-                previewItem.innerHTML = `
-                    <img src="${e.target.result}" alt="Product preview">
-                    <button type="button" class="remove-image" title="Remove image">&times;</button>
-                `;
-                
-                // Add to preview area
-                if (imagePreview) {
-                    imagePreview.appendChild(previewItem);
-                }
-                
-                // Update upload area text to show success
-                uploadArea.querySelector('h4').textContent = 'Image Uploaded Successfully';
-                uploadArea.querySelector('p').textContent = 'Click or drag to change image';
-                uploadArea.style.borderColor = 'var(--success)';
-                
-                // Add remove functionality
-                const removeButton = previewItem.querySelector('.remove-image');
-                removeButton.addEventListener('click', function() {
-                    console.log('Removing image');
-                    previewItem.remove();
-                    fileInput.value = '';
-                    uploadArea.querySelector('h4').textContent = 'Upload Product Images';
-                    uploadArea.querySelector('p').textContent = 'Drag & drop images or click to browse';
-                    uploadArea.style.borderColor = '#2d3748';
-                });
-            };
-            
-            reader.onerror = function() {
-                console.error('Error reading file');
-                alert('Error reading the image file. Please try again.');
-            };
-            
-            reader.readAsDataURL(file);
+    console.log('Handling image upload:', file);
+    
+    if (!file) {
+        console.log('No file provided');
+        return;
+    }
+    
+    // Check if it's an image
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (JPEG, PNG, GIF, etc.)');
+        return;
+    }
+    
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB. Your file is ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+        return;
+    }
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        console.log('File read successfully');
+        
+        // Clear previous previews
+        const imagePreview = document.getElementById('imagePreview');
+        if (imagePreview) {
+            imagePreview.innerHTML = '';
         }
+        
+        // Create preview container
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
+        previewItem.innerHTML = `
+            <img src="${e.target.result}" alt="Product preview">
+            <button type="button" class="remove-image" title="Remove image">&times;</button>
+        `;
+        
+        // Add to preview area
+        if (imagePreview) {
+            imagePreview.appendChild(previewItem);
+        }
+        
+        // Update upload area text to show success
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.querySelector('h4').textContent = 'Image Uploaded Successfully';
+            uploadArea.querySelector('p').textContent = 'Click or drag to change image';
+            uploadArea.style.borderColor = 'var(--success)';
+        }
+        
+        // FIXED: Ensure the file is properly set on the input
+        // Create a new DataTransfer to set the file properly
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        const fileInput = document.getElementById('image');
+        if (fileInput) {
+            fileInput.files = dataTransfer.files;
+            console.log('File input updated with file:', fileInput.files);
+        }
+        
+        // Add remove functionality
+        const removeButton = previewItem.querySelector('.remove-image');
+        removeButton.addEventListener('click', function() {
+            console.log('Removing image');
+            previewItem.remove();
+            const fileInput = document.getElementById('image');
+            if (fileInput) {
+                fileInput.value = '';
+                console.log('File input cleared');
+            }
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) {
+                uploadArea.querySelector('h4').textContent = 'Upload Product Images';
+                uploadArea.querySelector('p').textContent = 'Drag & drop images or click to browse';
+                uploadArea.style.borderColor = '#2d3748';
+            }
+        });
+    };
+    
+    reader.onerror = function() {
+        console.error('Error reading file');
+        alert('Error reading the image file. Please try again.');
+    };
+    
+    reader.readAsDataURL(file);
+}
         
         // Character count for description
         const descriptionTextarea = document.getElementById('description');
@@ -1202,215 +1262,262 @@
         }
         
         // Delivery option fields toggle
-        const deliveryOptions = document.querySelectorAll('input[name="delivery_option"]');
-        deliveryOptions.forEach(option => {
-            option.addEventListener('change', function() {
-                console.log('Delivery option changed:', this.value);
-                
-                // Hide all option fields first
-                document.querySelectorAll('.option-fields').forEach(field => {
-                    field.style.display = 'none';
-                    // Clear required attributes when hidden
-                    field.querySelectorAll('input').forEach(input => {
-                        input.removeAttribute('required');
-                    });
-                });
-                
-                // Show relevant fields and set required attributes
-                if (this.value === 'free') {
-                    const freeFields = document.getElementById('freeDeliveryFields');
-                    if (freeFields) {
-                        freeFields.style.display = 'block';
-                        freeFields.querySelector('input').setAttribute('required', 'required');
-                    }
-                } else if (this.value === 'paid') {
-                    const paidFields = document.getElementById('paidDeliveryFields');
-                    if (paidFields) {
-                        paidFields.style.display = 'block';
-                        paidFields.querySelector('input').setAttribute('required', 'required');
-                    }
-                }
-            });
-        });
+        // M-Pesa phone field toggle
+const paymentOptions = document.querySelectorAll('input[name="payment_method"]');
+paymentOptions.forEach(option => {
+    option.addEventListener('change', function() {
+        console.log('Payment option changed:', this.value);
         
-        // Form validation
-        function validateStep(step) {
-            console.log('Validating step:', step);
-            
-            switch(step) {
-                case '1':
-                    const title = document.getElementById('title');
-                    const category = document.getElementById('category_id');
-                    const condition = document.getElementById('condition');
-                    const image = document.getElementById('image');
-                    const description = document.getElementById('description');
-                    
-                    console.log('Form values:', {
-                        title: title?.value,
-                        category: category?.value,
-                        condition: condition?.value,
-                        image: image?.files,
-                        description: description?.value
-                    });
-                    
-                    if (!title || !title.value.trim()) {
-                        alert('Please enter a product title');
-                        if (title) title.focus();
-                        return false;
-                    }
-                    
-                    if (!category || !category.value) {
-                        alert('Please select a category');
-                        if (category) category.focus();
-                        return false;
-                    }
-                    
-                    if (!condition || !condition.value) {
-                        alert('Please select the product condition');
-                        if (condition) condition.focus();
-                        return false;
-                    }
-                    
-                    // Check if image is uploaded
-                    if (!image || !image.files || image.files.length === 0) {
-                        alert('Please upload at least one product image');
-                        return false;
-                    }
-                    
-                    if (!description || !description.value.trim()) {
-                        alert('Please enter a product description');
-                        if (description) description.focus();
-                        return false;
-                    }
-                    
-                    console.log('Step 1 validation passed');
-                    return true;
-                    
-                case '2':
-                    const price = document.getElementById('price');
-                    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked');
-                    
-                    console.log('Step 2 values:', {
-                        price: price?.value,
-                        deliveryOption: deliveryOption?.value
-                    });
-                    
-                    if (!price || !price.value || parseFloat(price.value) <= 0) {
-                        alert('Please enter a valid price');
-                        if (price) price.focus();
-                        return false;
-                    }
-                    
-                    if (!deliveryOption) {
-                        alert('Please select a delivery option');
-                        return false;
-                    }
-                    
-                    // Validate delivery-specific fields
-                    if (deliveryOption.value === 'free') {
-                        const deliveryAddress = document.querySelector('input[name="delivery_address"]');
-                        if (!deliveryAddress || !deliveryAddress.value.trim()) {
-                            alert('Please provide your wallet address or M-Pesa number for free delivery');
-                            if (deliveryAddress) deliveryAddress.focus();
-                            return false;
-                        }
-                    } else if (deliveryOption.value === 'paid') {
-                        const deliveryFee = document.querySelector('input[name="delivery_fee"]');
-                        if (!deliveryFee || !deliveryFee.value || parseFloat(deliveryFee.value) < 0) {
-                            alert('Please enter a valid delivery fee');
-                            if (deliveryFee) deliveryFee.focus();
-                            return false;
-                        }
-                    }
-                    
-                    console.log('Step 2 validation passed');
-                    return true;
-                    
-                case '3':
-                    const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
-                    if (!paymentMethod) {
-                        alert('Please select a payment method');
-                        return false;
-                    }
-                    console.log('Step 3 validation passed');
-                    return true;
-                    
-                default:
-                    return true;
+        // Hide M-Pesa fields by default
+        const mpesaFields = document.getElementById('mpesaFields');
+        if (mpesaFields) {
+            mpesaFields.style.display = 'none';
+            // Clear required attribute when hidden
+            const mpesaPhone = document.getElementById('mpesa_phone');
+            if (mpesaPhone) {
+                mpesaPhone.removeAttribute('required');
             }
         }
         
-        // Update review summary
-        function updateReviewSummary() {
-            console.log('Updating review summary...');
-            
-            // Product details
+        // Show M-Pesa fields when M-Pesa is selected
+        if (this.value === 'mpesa') {
+            if (mpesaFields) {
+                mpesaFields.style.display = 'block';
+                const mpesaPhone = document.getElementById('mpesa_phone');
+                if (mpesaPhone) {
+                    mpesaPhone.setAttribute('required', 'required');
+                }
+            }
+        }
+    });
+});
+        // Form validation
+        // Form validation
+function validateStep(step) {
+    console.log('Validating step:', step);
+    
+    switch(step) {
+        case '1':
             const title = document.getElementById('title');
             const category = document.getElementById('category_id');
             const condition = document.getElementById('condition');
+            const image = document.getElementById('image');
             const description = document.getElementById('description');
             
-            if (title) {
-                const reviewTitle = document.getElementById('review-title');
-                if (reviewTitle) reviewTitle.textContent = title.value || '-';
+            console.log('Form values:', {
+                title: title?.value,
+                category: category?.value,
+                condition: condition?.value,
+                image: image?.files,
+                description: description?.value
+            });
+            
+            if (!title || !title.value.trim()) {
+                alert('Please enter a product title');
+                if (title) title.focus();
+                return false;
             }
-            if (category) {
-                const reviewCategory = document.getElementById('review-category');
-                if (reviewCategory) reviewCategory.textContent = category.options[category.selectedIndex]?.text || '-';
+            
+            if (!category || !category.value) {
+                alert('Please select a category');
+                if (category) category.focus();
+                return false;
             }
-            if (condition) {
-                const reviewCondition = document.getElementById('review-condition');
-                if (reviewCondition) reviewCondition.textContent = condition.options[condition.selectedIndex]?.text || '-';
+            
+            if (!condition || !condition.value) {
+                alert('Please select the product condition');
+                if (condition) condition.focus();
+                return false;
             }
-            if (description) {
-                const reviewDescription = document.getElementById('review-description');
-                if (reviewDescription) {
-                    const descText = description.value || '';
-                    reviewDescription.textContent = 
-                        descText.substring(0, 100) + (descText.length > 100 ? '...' : '');
+            
+            // FIXED: Better image validation that checks both file input and preview
+            if (!image) {
+                alert('Image upload field not found');
+                return false;
+            }
+            
+            const hasFiles = image.files && image.files.length > 0;
+            const hasPreview = document.querySelector('.preview-item img') !== null;
+            
+            console.log('Image validation:', { hasFiles, hasPreview, files: image.files });
+            
+            if (!hasFiles && !hasPreview) {
+                alert('Please upload at least one product image');
+                return false;
+            }
+            
+            // If there's a preview but no files (might happen with drag/drop), 
+            // we need to ensure the file is still attached to the input
+            if (hasPreview && !hasFiles) {
+                alert('Please re-upload your image or try a different file');
+                return false;
+            }
+            
+            // Validate the actual file
+            if (hasFiles) {
+                const file = image.files[0];
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select a valid image file (JPEG, PNG, GIF, etc.)');
+                    return false;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Image size must be less than 5MB. Your file is ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                    return false;
                 }
             }
             
-            // Pricing & delivery
+            if (!description || !description.value.trim()) {
+                alert('Please enter a product description');
+                if (description) description.focus();
+                return false;
+            }
+            
+            console.log('Step 1 validation passed');
+            return true;
+            
+        case '2':
             const price = document.getElementById('price');
-            if (price) {
-                const reviewPrice = document.getElementById('review-price');
-                if (reviewPrice) {
-                    reviewPrice.textContent = 
-                        'KES ' + (price.value ? parseFloat(price.value).toLocaleString() : '-');
-                }
-            }
-            
-            const tokenDiscount = document.querySelector('input[name="token_discount"]:checked');
-            const reviewDiscount = document.getElementById('review-discount');
-            if (reviewDiscount) {
-                reviewDiscount.textContent = 
-                    tokenDiscount ? (tokenDiscount.value === 'none' ? 'No discount' : tokenDiscount.value + '% discount') : '-';
-            }
-            
             const deliveryOption = document.querySelector('input[name="delivery_option"]:checked');
-            const reviewDelivery = document.getElementById('review-delivery');
-            if (reviewDelivery) {
-                let deliveryText = '-';
-                if (deliveryOption) {
-                    switch(deliveryOption.value) {
-                        case 'free':
-                            deliveryText = 'Free Delivery';
-                            break;
-                        case 'meetup':
-                            deliveryText = 'Campus Meetup';
-                            break;
-                        case 'paid':
-                            deliveryText = 'Paid Delivery';
-                            break;
-                    }
-                }
-                reviewDelivery.textContent = deliveryText;
+            
+            console.log('Step 2 values:', {
+                price: price?.value,
+                deliveryOption: deliveryOption?.value
+            });
+            
+            if (!price || !price.value || parseFloat(price.value) <= 0) {
+                alert('Please enter a valid price');
+                if (price) price.focus();
+                return false;
             }
             
-            console.log('Review summary updated');
+            if (!deliveryOption) {
+                alert('Please select a delivery option');
+                return false;
+            }
+            
+            // Validate delivery-specific fields
+            if (deliveryOption.value === 'free') {
+                const deliveryAddress = document.querySelector('input[name="delivery_address"]');
+                if (!deliveryAddress || !deliveryAddress.value.trim()) {
+                    alert('Please provide your wallet address or M-Pesa number for free delivery');
+                    if (deliveryAddress) deliveryAddress.focus();
+                    return false;
+                }
+            } else if (deliveryOption.value === 'paid') {
+                const deliveryFee = document.querySelector('input[name="delivery_fee"]');
+                if (!deliveryFee || !deliveryFee.value || parseFloat(deliveryFee.value) < 0) {
+                    alert('Please enter a valid delivery fee');
+                    if (deliveryFee) deliveryFee.focus();
+                    return false;
+                }
+            }
+            
+            console.log('Step 2 validation passed');
+            return true;
+            
+        case '3':
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (!paymentMethod) {
+                alert('Please select a payment method');
+                return false;
+            }
+            
+            // If M-Pesa selected, validate phone number
+            if (paymentMethod.value === 'mpesa') {
+                const mpesaPhone = document.getElementById('mpesa_phone');
+                if (!mpesaPhone || !mpesaPhone.value.trim()) {
+                    alert('Please enter your M-Pesa phone number');
+                    if (mpesaPhone) mpesaPhone.focus();
+                    return false;
+                }
+                
+                const phoneRegex = /^[0-9]{10,12}$/;
+                if (!phoneRegex.test(mpesaPhone.value.replace(/\s+/g, ''))) {
+                    alert('Please enter a valid phone number (10-12 digits)');
+                    if (mpesaPhone) mpesaPhone.focus();
+                    return false;
+                }
+            }
+            
+            console.log('Step 3 validation passed');
+            return true;
+            
+        default:
+            return true;
+    }
+}
+        // Update review summary
+        // Update review summary
+function updateReviewSummary() {
+    console.log('Updating review summary...');
+    
+    // Product details
+    const title = document.getElementById('title');
+    const category = document.getElementById('category_id');
+    const condition = document.getElementById('condition');
+    const description = document.getElementById('description');
+    
+    if (title) {
+        const reviewTitle = document.getElementById('review-title');
+        if (reviewTitle) reviewTitle.textContent = title.value || '-';
+    }
+    if (category) {
+        const reviewCategory = document.getElementById('review-category');
+        if (reviewCategory) reviewCategory.textContent = category.options[category.selectedIndex]?.text || '-';
+    }
+    if (condition) {
+        const reviewCondition = document.getElementById('review-condition');
+        if (reviewCondition) reviewCondition.textContent = condition.options[condition.selectedIndex]?.text || '-';
+    }
+    if (description) {
+        const reviewDescription = document.getElementById('review-description');
+        if (reviewDescription) {
+            const descText = description.value || '';
+            reviewDescription.textContent = 
+                descText.substring(0, 100) + (descText.length > 100 ? '...' : '');
         }
-
+    }
+    
+    // Pricing & delivery
+    const price = document.getElementById('price');
+    if (price) {
+        const reviewPrice = document.getElementById('review-price');
+        if (reviewPrice) {
+            reviewPrice.textContent = 
+                'KES ' + (price.value ? parseFloat(price.value).toLocaleString() : '-');
+        }
+    }
+    
+    const tokenDiscount = document.querySelector('input[name="token_discount"]:checked');
+    const reviewDiscount = document.getElementById('review-discount');
+    if (reviewDiscount) {
+        reviewDiscount.textContent = 
+            tokenDiscount ? (tokenDiscount.value === 'none' ? 'No discount' : tokenDiscount.value + '% discount') : '-';
+    }
+    
+    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked');
+    const reviewDelivery = document.getElementById('review-delivery');
+    if (reviewDelivery) {
+        let deliveryText = '-';
+        if (deliveryOption) {
+            switch(deliveryOption.value) {
+                case 'free':
+                    deliveryText = 'Free Delivery';
+                    break;
+                case 'meetup':
+                    deliveryText = 'Campus Meetup';
+                    break;
+                case 'paid':
+                    deliveryText = 'Paid Delivery';
+                    break;
+            }
+        }
+        reviewDelivery.textContent = deliveryText;
+    }
+    
+    console.log('Review summary updated');
+}
         // Initialize delivery option fields
         console.log('Initializing delivery options...');
         const initialDeliveryOption = document.querySelector('input[name="delivery_option"]:checked');
@@ -1419,13 +1526,6 @@
             initialDeliveryOption.dispatchEvent(new Event('change'));
         } else {
             console.log('No initial delivery option found');
-        }
-
-        // Initialize the first step as active
-        console.log('Initializing first step...');
-        const firstStep = document.querySelector('.form-step[data-step="1"]');
-        if (firstStep) {
-            firstStep.classList.add('active');
         }
 
         console.log('Product creation page initialization complete');

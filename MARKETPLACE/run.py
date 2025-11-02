@@ -1,16 +1,19 @@
+# run.py
 from app import create_app, db
 
 app = create_app()
 
 if __name__ == '__main__':
     with app.app_context():
-        # Create database tables
-        db.create_all()
-        
-        # Add sample categories
-        from app.models import Category
-        
-        if not Category.query.first():
+        try:
+            # Drop all tables and recreate (for development only)
+            db.drop_all()
+            db.create_all()
+            print("Database tables created!")
+            
+            # Add sample categories
+            from app.models import Category
+            
             categories = [
                 Category(name='Electronics', description='Phones, laptops, gadgets'),
                 Category(name='Furniture', description='Chairs, beds, tables'),
@@ -22,6 +25,10 @@ if __name__ == '__main__':
                 db.session.add(category)
             
             db.session.commit()
-            print("Sample categories added!")
+            print("Database created with updated schema!")
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            db.session.rollback()
     
     app.run(debug=True)

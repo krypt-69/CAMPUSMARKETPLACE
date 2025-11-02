@@ -98,15 +98,9 @@
 
             <div class="form-options">
                 <label class="checkbox-container">
-                    <input type="checkbox" name="terms" required>
+                    <input type="checkbox" name="terms" required id="terms">
                     <span class="checkmark"></span>
                     I agree to the <a href="#" class="inline-link">Terms of Service</a> and <a href="#" class="inline-link">Privacy Policy</a>
-                </label>
-                
-                <label class="checkbox-container">
-                    <input type="checkbox" name="newsletter">
-                    <span class="checkmark"></span>
-                    Send me updates about new features and promotions
                 </label>
             </div>
 
@@ -115,6 +109,7 @@
                 Create Account
             </button>
         </form>
+        
 
         <div class="auth-divider">
             <span>or sign up with</span>
@@ -575,44 +570,55 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const passwordInput = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirm-password');
         const strengthFill = document.querySelector('.strength-fill');
         const strengthText = document.querySelector('.strength-text');
+        const form = document.querySelector('.auth-form');
 
+        // Password strength indicator
         passwordInput.addEventListener('input', function() {
             const password = this.value;
             let strength = 0;
 
-            // Length check
             if (password.length >= 8) strength++;
-            
-            // Lowercase check
             if (/[a-z]/.test(password)) strength++;
-            
-            // Uppercase check
             if (/[A-Z]/.test(password)) strength++;
-            
-            // Number check
             if (/[0-9]/.test(password)) strength++;
-            
-            // Special character check
             if (/[^A-Za-z0-9]/.test(password)) strength++;
 
-            // Update strength indicator
             strengthFill.setAttribute('data-strength', strength);
-            
-            // Update text
             const strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
             strengthText.textContent = strengthLabels[strength];
         });
 
-        // Confirm password validation
-        const confirmPassword = document.getElementById('confirm-password');
+        // Password confirmation validation
         confirmPassword.addEventListener('input', function() {
-            if (this.value !== passwordInput.value) {
+            if (this.value !== passwordInput.value && this.value !== '') {
                 this.style.borderColor = 'var(--error)';
             } else {
-                this.style.borderColor = 'var(--success)';
+                this.style.borderColor = '';
             }
+        });
+
+        // Form submission handler - remove any blocking
+        form.addEventListener('submit', function(e) {
+            // Only prevent if passwords don't match
+            if (passwordInput.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+            
+            // Check if terms are accepted
+            const termsCheckbox = document.querySelector('input[name="terms"]');
+            if (!termsCheckbox.checked) {
+                e.preventDefault();
+                alert('Please accept the Terms of Service');
+                return false;
+            }
+            
+            // If all validations pass, allow form submission
+            return true;
         });
     });
 </script>

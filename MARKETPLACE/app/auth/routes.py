@@ -15,7 +15,7 @@ def register():
         phone = request.form.get('phone')
         
         # Check if user exists
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter((User.email == email) | (User.username == username)).first()
         if user:
             flash('Email already exists!', 'error')
             return redirect(url_for('auth.register'))
@@ -27,6 +27,7 @@ def register():
             password_hash=generate_password_hash(password),
             phone=phone
         )
+        print(f'this is the email{email},{username}')
         
         db.session.add(new_user)
         db.session.commit()

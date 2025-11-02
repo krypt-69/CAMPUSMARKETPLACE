@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="payment-pending-container">
+    <div class="payment-header">
+        <div class="payment-icon">
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+        <h1>Complete Your Payment</h1>
+        <p class="payment-subtitle">Check your phone to complete the M-Pesa payment</p>
+    </div>
+
+    <div class="payment-content">
+        <div class="payment-info">
+            <div class="info-card">
+                <h3>Payment Instructions</h3>
+                <ol class="instructions">
+                    <li>Check your phone for an M-Pesa prompt</li>
+                    <li>Enter your M-Pesa PIN when prompted</li>
+                    <li>Wait for confirmation message</li>
+                    <li>Your product will be listed automatically</li>
+                </ol>
+            </div>
+
+            <div class="product-summary">
+                <h3>Product Details</h3>
+                <div class="summary-item">
+                    <span class="label">Product:</span>
+                    <span class="value">{{ product.title }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Listing Fee:</span>
+                    <span class="value">KES {{ listing_fee }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Status:</span>
+                    <span class="status pending" id="paymentStatus">Waiting for payment...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-actions">
+            <button id="checkStatusBtn" class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i>
+                Check Payment Status
+            </button>
+            <a href="{{ url_for('products.my_products_list') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to My Products
+            </a>
+        </div>
+
+        <div class="payment-help">
+            <div class="help-card">
+                <i class="fas fa-question-circle"></i>
+                <div class="help-content">
+                    <h4>Need Help?</h4>
+                    <p>If you don't receive the prompt within 2 minutes, please try again or contact support.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-pending-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .payment-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .payment-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+        font-size: 3rem;
+    }
+
+    .payment-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #e5e7eb;
+        margin-bottom: 0.5rem;
+    }
+
+    .payment-subtitle {
+        font-size: 1.125rem;
+        color: #9ca3af;
+    }
+
+    .payment-content {
+        background: #0a0f1c;
+        border-radius: var(--radius);
+        border: 1px solid #2d3748;
+        padding: 2rem;
+    }
+
+    .info-card, .product-summary {
+        background: #111827;
+        border-radius: var(--radius);
+        border: 1px solid #2d3748;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-card h3, .product-summary h3 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+    }
+
+    .instructions {
+        color: #e5e7eb;
+        line-height: 1.6;
+        padding-left: 1.5rem;
+    }
+
+    .instructions li {
+        margin-bottom: 0.5rem;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #2d3748;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .label {
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .value {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .status.pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status.completed {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .payment-actions {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.5rem;
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+        background: #374151;
+        color: #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+    }
+
+    .payment-help {
+        margin-top: 2rem;
+    }
+
+    .help-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: var(--radius);
+    }
+
+    .help-card i {
+        font-size: 2rem;
+        color: var(--primary);
+    }
+
+    .help-content h4 {
+        color: #e5e7eb;
+        margin-bottom: 0.5rem;
+    }
+
+    .help-content p {
+        color: #9ca3af;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .payment-pending-container {
+            padding: 1rem;
+        }
+
+        .payment-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkStatusBtn = document.getElementById('checkStatusBtn');
+        const paymentStatus = document.getElementById('paymentStatus');
+        const checkoutRequestId = '{{ checkout_request_id }}';
+
+        checkStatusBtn.addEventListener('click', function() {
+            checkStatusBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            checkStatusBtn.disabled = true;
+
+            fetch(`/products/check-payment-status/${checkoutRequestId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'completed') {
+                        paymentStatus.textContent = 'Payment Completed!';
+                        paymentStatus.className = 'status completed';
+                        checkStatusBtn.innerHTML = '<i class="fas fa-check"></i> Payment Verified';
+                        checkStatusBtn.disabled = true;
+                        
+                        // Redirect to product page after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = `/products/view/${data.product_id}`;
+                        }, 2000);
+                    } else if (data.status === 'pending') {
+                        paymentStatus.textContent = 'Still waiting for payment...';
+                        checkStatusBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Check Again';
+                        checkStatusBtn.disabled = false;
+                    } else {
+                        paymentStatus.textContent = 'Payment not found';
+                        checkStatusBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Try Again';
+                        checkStatusBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking status:', error);
+                    checkStatusBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Try Again';
+                    checkStatusBtn.disabled = false;
+                });
+        });
+
+        // Auto-check every 30 seconds
+        setInterval(() => {
+            if (paymentStatus.textContent !== 'Payment Completed!') {
+                checkStatusBtn.click();
+            }
+        }, 30000);
+    });
+</script>
+{% endblock %}
