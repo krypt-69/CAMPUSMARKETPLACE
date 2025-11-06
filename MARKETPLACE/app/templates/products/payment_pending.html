@@ -33,11 +33,17 @@
                 <li>This page will automatically update</li>
             </ol>
         </div>
+        <!-- Add this right after the payment-status div -->
+<div class="payment-status">
+    <div class="spinner"></div>
+    <p id="statusMessage">Waiting for payment confirmation...</p>
+</div>
+
+<!-- Add these elements for error and status display -->
+<div id="paymentError" class="error-message" style="display: none;"></div>
+<div id="paymentStatusText" class="status-text"></div>
         
-        <div class="payment-status">
-            <div class="spinner"></div>
-            <p id="statusMessage">Waiting for payment confirmation...</p>
-        </div>
+    
         
         <div class="action-buttons">
             <button onclick="cancelPayment()" class="btn btn-secondary">Cancel</button>
@@ -47,6 +53,22 @@
 </div>
 
 <style>
+    .error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #ef4444;
+    text-align: center;
+}
+
+.status-text {
+    color: #e5e7eb;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
 .payment-pending-container {
     max-width: 500px;
     margin: 2rem auto;
@@ -200,8 +222,7 @@ console.log('Starting payment status check for:', checkoutRequestID);
 checkPaymentStatus(checkoutRequestID);
 
 async function checkPaymentStatus(checkoutID) {
-    const errorBox = document.getElementById("paymentError");
-    const statusText = document.getElementById("paymentStatusText");
+    const statusMessage = document.getElementById('statusMessage'); // Use existing element
 
     try {
         const res = await fetch(`/check-payment-status/${checkoutID}`);
@@ -213,22 +234,28 @@ async function checkPaymentStatus(checkoutID) {
         const data = await res.json();
 
         if (data.status === "completed") {
-            statusText.textContent = "✅ Payment confirmed! Your product is now active.";
+            statusMessage.innerHTML = "✅ <strong>Payment confirmed!</strong> Your product is now active.";
+            statusMessage.style.color = "#10b981"; // Green color for success
             setTimeout(() => {
-                window.location.href = "/products/my-products";
+                window.location.href = "/my-products";
             }, 3000);
         } 
         else if (data.status === "pending") {
-            statusText.textContent = "⏳ Still waiting for M-Pesa confirmation...";
+            statusMessage.innerHTML = "⏳ <strong>Still waiting for M-Pesa confirmation...</strong>";
+            statusMessage.style.color = "#f59e0b"; // Amber color for waiting
             setTimeout(() => checkPaymentStatus(checkoutID), 2000);
         } 
         else if (data.status === "not_found") {
-            errorBox.textContent = "⚠️ Payment record not found. It may have been cancelled.";
-            statusText.textContent = "You can try listing again.";
+            statusMessage.innerHTML = "⚠️ <strong>Payment record not found.</strong> It may have been cancelled.";
+            statusMessage.style.color = "#ef4444"; // Red color for error
+            // Show cancel option
+            setTimeout(() => {
+                window.location.href = "/create";
+            }, 5000);
         } 
         else {
-            errorBox.textContent = "❌ Payment failed or cancelled. Please try again.";
-            statusText.textContent = "Redirecting to create page...";
+            statusMessage.innerHTML = "❌ <strong>Payment failed or cancelled.</strong> Please try again.";
+            statusMessage.style.color = "#ef4444";
             setTimeout(() => {
                 window.location.href = "/create";
             }, 3000);
@@ -236,14 +263,13 @@ async function checkPaymentStatus(checkoutID) {
 
     } catch (err) {
         console.error("Payment check error:", err);
-        errorBox.textContent = "🚫 Network issue while checking payment. Please try again later.";
-        statusText.textContent = "";
+        statusMessage.innerHTML = "🚫 <strong>Network issue</strong> while checking payment. Please try again later.";
+        statusMessage.style.color = "#ef4444";
         setTimeout(() => {
             window.location.href = "/create";
         }, 4000);
     }
 }
-
 function checkStatus() {
     // Manual status check
     const checkoutRequestID = document.getElementById('checkoutRequestID').textContent;

@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 2rem auto; padding: 1.5rem;">
+    <!-- Header Section -->
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #2d3748;">
+        <div>
+            <h1 style="margin: 0; color: #e2e8f0; font-weight: 600;">Edit Product</h1>
+            <p style="margin: 0.5rem 0 0 0; color: #a0aec0; font-size: 0.95rem;">Update your product details to attract more buyers</p>
+        </div>
+        <div class="product-status" style="background: #2d3748; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; color: #cbd5e0;">
+            <i class="fas fa-edit" style="margin-right: 5px;"></i> Editing: {{ product.title[:20] }}{% if product.title|length > 20 %}...{% endif %}
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container" style="background: #1e2435; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 2rem;">
+        <form action="{{ url_for('products.edit_product', product_id=product.id) }}" method="post" enctype="multipart/form-data">
+            {%- if csrf_token is defined %}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {%- endif %}
+
+            <!-- Product Details Card -->
+            <div class="form-card" style="background: #252b3d; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #2d3748;">
+                <div class="card-header" style="margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; color: #e2e8f0; font-size: 1.25rem; display: flex; align-items: center;">
+                        <i class="fas fa-info-circle" style="margin-right: 10px; color: #4299e1;"></i>
+                        Product Details
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: #a0aec0; font-size: 0.9rem;">Basic information about your product</p>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="title" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #e2e8f0;">Product Title</label>
+                    <input required type="text" id="title" name="title" class="form-control" 
+                           value="{{ product.title }}" 
+                           style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #4a5568; border-radius: 8px; font-size: 1rem; transition: all 0.3s; background: #2d3748; color: #e2e8f0;"
+                           onfocus="this.style.borderColor='#4299e1'; this.style.boxShadow='0 0 0 3px rgba(66, 153, 225, 0.2)';"
+                           onblur="this.style.borderColor='#4a5568'; this.style.boxShadow='none';">
+                    <small class="form-text" style="display: block; margin-top: 0.5rem; color: #a0aec0;">Make it descriptive and appealing to buyers</small>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #e2e8f0;">Description</label>
+                    <textarea required id="description" name="description" class="form-control" rows="6"
+                              style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #4a5568; border-radius: 8px; font-size: 1rem; transition: all 0.3s; resize: vertical; min-height: 120px; background: #2d3748; color: #e2e8f0;"
+                              onfocus="this.style.borderColor='#4299e1'; this.style.boxShadow='0 0 0 3px rgba(66, 153, 225, 0.2)';"
+                              onblur="this.style.borderColor='#4a5568'; this.style.boxShadow='none';">{{ product.description }}</textarea>
+                    <small class="form-text" style="display: block; margin-top: 0.5rem; color: #a0aec0;">Describe your product's features, benefits, and condition</small>
+                </div>
+            </div>
+
+            <!-- Pricing & Details Card -->
+            <div class="form-card" style="background: #252b3d; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #2d3748;">
+                <div class="card-header" style="margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; color: #e2e8f0; font-size: 1.25rem; display: flex; align-items: center;">
+                        <i class="fas fa-tags" style="margin-right: 10px; color: #48bb78;"></i>
+                        Pricing & Details
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: #a0aec0; font-size: 0.9rem;">Set the right price and category</p>
+                </div>
+
+                <div class="form-row" style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="price" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #e2e8f0;">Price (KES)</label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; font-weight: 600;">KES</span>
+                            <input required type="number" step="0.01" id="price" name="price" class="form-control" value="{{ product.price }}"
+                                   style="width: 100%; padding: 0.75rem 1rem 0.75rem 3.5rem; border: 1px solid #4a5568; border-radius: 8px; font-size: 1rem; transition: all 0.3s; background: #2d3748; color: #e2e8f0;"
+                                   onfocus="this.style.borderColor='#4299e1'; this.style.boxShadow='0 0 0 3px rgba(66, 153, 225, 0.2)';"
+                                   onblur="this.style.borderColor='#4a5568'; this.style.boxShadow='none';">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="flex: 1;">
+                        <label for="condition" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #e2e8f0;">Condition</label>
+                        <select id="condition" name="condition" class="form-control"
+                                style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #4a5568; border-radius: 8px; font-size: 1rem; transition: all 0.3s; background: #2d3748; color: #e2e8f0;"
+                                onfocus="this.style.borderColor='#4299e1'; this.style.boxShadow='0 0 0 3px rgba(66, 153, 225, 0.2)';"
+                                onblur="this.style.borderColor='#4a5568'; this.style.boxShadow='none';">
+                            <option value="new" {% if product.condition == 'new' %}selected{% endif %}>New</option>
+                            <option value="used_like_new" {% if product.condition == 'used_like_new' %}selected{% endif %}>Used - Like New</option>
+                            <option value="used_good" {% if product.condition == 'used_good' %}selected{% endif %}>Used - Good</option>
+                            <option value="used_fair" {% if product.condition == 'used_fair' %}selected{% endif %}>Used - Fair</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="category_id" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #e2e8f0;">Category</label>
+                    <select id="category_id" name="category_id" class="form-control" required
+                            style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #4a5568; border-radius: 8px; font-size: 1rem; transition: all 0.3s; background: #2d3748; color: #e2e8f0;"
+                            onfocus="this.style.borderColor='#4299e1'; this.style.boxShadow='0 0 0 3px rgba(66, 153, 225, 0.2)';"
+                            onblur="this.style.borderColor='#4a5568'; this.style.boxShadow='none';">
+                        {% for c in categories %}
+                            <option value="{{ c.id }}" {% if product.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; padding: 1rem; background: #2d3748; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="position: relative;">
+                            <input type="checkbox" id="is_fast_moving" name="is_fast_moving" value="1" {% if product.is_fast_moving %}checked{% endif %}
+                                   style="width: 18px; height: 18px; accent-color: #48bb78;">
+                        </div>
+                        <div>
+                            <label for="is_fast_moving" style="font-weight: 600; color: #e2e8f0; margin: 0; cursor: pointer;">Feature this product</label>
+                            <p style="margin: 0.25rem 0 0 0; color: #a0aec0; font-size: 0.85rem;">Mark as "fast moving" to get more visibility</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Section Card -->
+            <div class="form-card" style="background: #252b3d; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #2d3748;">
+                <div class="card-header" style="margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; color: #e2e8f0; font-size: 1.25rem; display: flex; align-items: center;">
+                        <i class="fas fa-images" style="margin-right: 10px; color: #ed8936;"></i>
+                        Product Image
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: #a0aec0; font-size: 0.9rem;">A good image increases sales</p>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: #e2e8f0;">Current Image</label>
+                    {% if product.image %}
+                        <div style="display: inline-block; position: relative;">
+                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" 
+                                 alt="Current product image" 
+                                 style="max-width: 220px; display: block; border-radius: 8px; border: 1px solid #4a5568; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                            <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                Current
+                            </div>
+                        </div>
+                    {% else %}
+                        <div style="padding: 2rem; text-align: center; background: #2d3748; border-radius: 8px; border: 1px dashed #4a5568;">
+                            <i class="fas fa-image" style="font-size: 2rem; color: #718096; margin-bottom: 0.5rem;"></i>
+                            <p style="margin: 0; color: #a0aec0;">No image uploaded</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="image" style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: #e2e8f0;">Replace Image (optional)</label>
+                    <div class="file-upload-area" 
+                         style="border: 2px dashed #4a5568; border-radius: 8px; padding: 2rem; text-align: center; transition: all 0.3s; cursor: pointer; background: #2d3748;"
+                         onmouseover="this.style.borderColor='#4299e1'; this.style.backgroundColor='#2a4365';"
+                         onmouseout="this.style.borderColor='#4a5568'; this.style.backgroundColor='#2d3748';"
+                         onclick="document.getElementById('image').click();">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #4299e1; margin-bottom: 0.75rem;"></i>
+                        <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #e2e8f0;">Click to upload a new image</p>
+                        <p style="margin: 0; color: #a0aec0; font-size: 0.9rem;">PNG, JPG, JPEG, GIF up to 5MB</p>
+                        <input type="file" id="image" name="image" accept="image/*" class="form-control" 
+                               style="display: none;" 
+                               onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'No file chosen'">
+                        <p id="file-name" style="margin: 0.75rem 0 0 0; color: #4299e1; font-weight: 500;">No file chosen</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #2d3748;">
+                <a href="{{ url_for('products.my_products_list') }}" class="btn btn-secondary" 
+                   style="padding: 0.75rem 1.5rem; border: 1px solid #4a5568; border-radius: 8px; background: #2d3748; color: #cbd5e0; font-weight: 500; text-decoration: none; transition: all 0.3s;"
+                   onmouseover="this.style.backgroundColor='#4a5568'; this.style.borderColor='#718096';"
+                   onmouseout="this.style.backgroundColor='#2d3748'; this.style.borderColor='#4a5568';">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary"
+                        style="padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #2b6cb0; color: white; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;"
+                        onmouseover="this.style.backgroundColor='#2c5282'; this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.backgroundColor='#2b6cb0'; this.style.transform='translateY(0)';">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    /* Dark Theme Styles */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #1a1f2e;
+        color: #cbd5e0;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .container {
+        background: #1a1f2e;
+        min-height: 100vh;
+    }
+    
+    /* Form elements styling */
+    select.form-control {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    select.form-control option {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    /* Checkbox styling */
+    input[type="checkbox"] {
+        filter: brightness(0.8) contrast(1.2);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 1rem !important;
+        }
+        
+        .header-section {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 1rem;
+        }
+        
+        .product-status {
+            align-self: flex-start;
+        }
+        
+        .form-container {
+            padding: 1rem !important;
+        }
+        
+        .form-card {
+            padding: 1rem !important;
+        }
+    }
+    
+    /* Scrollbar styling for dark theme */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #1a1f2e;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #4a5568;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #718096;
+    }
+</style>
+
+<script>
+    // Add some interactive enhancements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add loading state to form submission
+        const form = document.querySelector('form');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        form.addEventListener('submit', function() {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+        });
+        
+        // Enhance file upload display
+        const fileInput = document.getElementById('image');
+        fileInput.addEventListener('change', function() {
+            const fileName = document.getElementById('file-name');
+            if (this.files[0]) {
+                fileName.innerHTML = '<i class="fas fa-check-circle"></i> ' + this.files[0].name;
+                fileName.style.color = '#48bb78';
+            } else {
+                fileName.textContent = 'No file chosen';
+                fileName.style.color = '#4299e1';
+            }
+        });
+    });
+</script>
+{% endblock %}

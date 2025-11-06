@@ -6,6 +6,7 @@ app = create_app()
 if __name__ == '__main__':
     with app.app_context():
         try:
+            
             # Drop all tables and recreate (for development only)
             print("Database tables  not created!")
             

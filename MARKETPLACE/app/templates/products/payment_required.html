@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="payment-required-container">
+    <div class="payment-card">
+        <div class="payment-header">
+            <i class="fas fa-lock"></i>
+            <h1>Premium Access Required</h1>
+            <p>To view full product details and contact sellers, you need premium access</p>
+        </div>
+        
+        <div class="product-preview">
+            <h3>{{ product.title }}</h3>
+            <p class="price">KES {{ "{:,.2f}".format(product.price) }}</p>
+            <p class="preview-desc">{{ product.description[:200] }}...</p>
+        </div>
+        
+        <div class="payment-options">
+            <div class="option-card">
+                <h4>Daily Pass</h4>
+                <p class="price">KES 20</p>
+                <ul>
+                    <li>View all product details</li>
+                    <li>Contact sellers directly</li>
+                    <li>Access for 24 hours</li>
+                </ul>
+                <button class="btn btn-primary">Get Daily Pass</button>
+            </div>
+            
+            <div class="option-card featured">
+                <h4>Monthly Membership</h4>
+                <p class="price">KES 200</p>
+                <ul>
+                    <li>Unlimited product access</li>
+                    <li>Priority customer support</li>
+                    <li>Special member discounts</li>
+                    <li>30-day access</li>
+                </ul>
+                <button class="btn btn-secondary">Get Membership</button>
+            </div>
+        </div>
+        
+        <div class="payment-footer">
+            <p>Already paid? <a href="#">Restore access</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

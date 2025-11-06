@@ -19,6 +19,7 @@ class User(UserMixin, db.Model):
     
     products = db.relationship('Product', backref='seller', lazy=True)
     payments = db.relationship('Payment', backref='user', lazy=True)
+    
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -55,7 +56,12 @@ class Product(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    payments = db.relationship('Payment', backref='product', lazy=True)
+    payments = db.relationship(
+        'Payment',
+        backref='product',
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f'<Product {self.title}>'

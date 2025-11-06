@@ -6,7 +6,8 @@ import base64
 from werkzeug.utils import secure_filename
 from app.models import Product, Category, Payment
 from app import db
-from app.mpesa import MpesaGateway  # We'll create this
+from app.mpesa import MpesaGateway
+import uuid  # We'll create this
 
 products_bp = Blueprint('products', __name__)
 
@@ -75,9 +76,10 @@ def handle_mpesa_payment(request):
         if 'image' in request.files:
             file = request.files['image']
             if file and file.filename != '' and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                image_filename = filename
+                ext = file.filename.rsplit('.', 1)[1].lower()
+                unique_filename = f"{uuid.uuid4().hex}.{ext}"
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename))
+                image_filename = unique_filename
         
         # Create product first (but don't commit yet)
         new_product = Product(
@@ -266,11 +268,29 @@ def all_products():
     products = Product.query.filter_by(is_sold=False, is_active=True).order_by(Product.created_at.desc()).all()
     return render_template('products/all.html', products=products)
 
-@products_bp.route('/view/<int:product_id>')
+@products_bp.route('/product/<int:product_id>')
 def view_product(product_id):
     product = Product.query.get_or_404(product_id)
-    has_paid = True
-    return render_template('products/view.html', product=product, has_paid=has_paid)
+    
+    # If user is not authenticated, redirect to login
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=url_for('products.view_product', product_id=product_id)))
+    
+    # Check if user has paid for viewing (you'll need to implement this logic)
+    has_paid = check_user_payment(current_user.id)
+    has_paid = True  # You'll need to implement this
+    
+    if not has_paid:
+        # Redirect to payment page
+        return redirect(url_for('products.payment_required', product_id=product_id))
+    
+    return render_template('products/view_product.html', product=product)
+
+@products_bp.route('/payment-required/<int:product_id>')
+@login_required
+def payment_required(product_id):
+    product = Product.query.get_or_404(product_id)
+    return render_template('products/payment_required.html', product=product)
 
 @products_bp.route('/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
@@ -311,20 +331,31 @@ def edit_product(product_id):
 @products_bp.route('/delete/<int:product_id>', methods=['POST'])
 @login_required
 def delete_product(product_id):
-    product = Product.query.get_or_404(product_id)
-    
-    if product.seller_id != current_user.id:
-        return jsonify({'success': False, 'message': 'You can only delete your own products!'}), 403
-    
-    if product.image:
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], product.image)
-        if os.path.exists(image_path):
-            os.remove(image_path)
-    
-    db.session.delete(product)
-    db.session.commit()
-    
-    return jsonify({'success': True, 'message': 'Product deleted successfully!'})
+    try:
+        product = Product.query.get_or_404(product_id)
+
+        if product.seller_id != current_user.id:
+            return jsonify({'success': False, 'message': 'You can only delete your own products!'}), 403
+
+        # Handle image deletion safely
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
+        if upload_folder and product.image:
+            image_path = os.path.join(upload_folder, product.image)
+            if os.path.exists(image_path):
+                try:
+                    os.remove(image_path)
+                except Exception as e:
+                    current_app.logger.warning(f"⚠️ Could not remove image file: {e}")
+
+        db.session.delete(product)
+        db.session.commit()
+
+        return jsonify({'success': True, 'message': 'Product deleted successfully!'})
+
+    except Exception as e:
+        current_app.logger.error(f"❌ Delete error for product {product_id}: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': 'Server error occurred while deleting product.'}), 500
+
 
 @products_bp.route('/mark-sold/<int:product_id>', methods=['POST'])
 @login_required
