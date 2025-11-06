@@ -1,305 +1,267 @@
+[file name]: payment_pending.html
+[file content begin]
 {% extends "base.html" %}
 
 {% block content %}
 <div class="payment-pending-container">
-    <div class="payment-header">
-        <div class="payment-icon">
-            <i class="fas fa-mobile-alt"></i>
-        </div>
-        <h1>Complete Your Payment</h1>
-        <p class="payment-subtitle">Check your phone to complete the M-Pesa payment</p>
-    </div>
-
-    <div class="payment-content">
-        <div class="payment-info">
-            <div class="info-card">
-                <h3>Payment Instructions</h3>
-                <ol class="instructions">
-                    <li>Check your phone for an M-Pesa prompt</li>
-                    <li>Enter your M-Pesa PIN when prompted</li>
-                    <li>Wait for confirmation message</li>
-                    <li>Your product will be listed automatically</li>
-                </ol>
+    <div class="payment-status-card">
+        <div class="status-header">
+            <div class="status-icon">
+                <i class="fas fa-mobile-alt"></i>
             </div>
-
-            <div class="product-summary">
-                <h3>Product Details</h3>
-                <div class="summary-item">
-                    <span class="label">Product:</span>
-                    <span class="value">{{ product.title }}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="label">Listing Fee:</span>
-                    <span class="value">KES {{ listing_fee }}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="label">Status:</span>
-                    <span class="status pending" id="paymentStatus">Waiting for payment...</span>
-                </div>
+            <h1>Complete Your Payment</h1>
+            <p>Check your phone to complete the M-Pesa payment</p>
+        </div>
+        
+        <div class="payment-details">
+            <div class="detail-item">
+                <span class="label">Product:</span>
+                <span class="value">{{ product_title }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Reference:</span>
+                <span class="value" id="checkoutRequestID">{{ checkout_request_id }}</span>
             </div>
         </div>
-
-        <div class="payment-actions">
-            <button id="checkStatusBtn" class="btn btn-primary">
-                <i class="fas fa-sync-alt"></i>
-                Check Payment Status
-            </button>
-            <a href="{{ url_for('products.my_products_list') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i>
-                Back to My Products
-            </a>
+        
+        <div class="payment-instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Check your phone for M-Pesa prompt</li>
+                <li>Enter your M-Pesa PIN when prompted</li>
+                <li>Wait for payment confirmation</li>
+                <li>This page will automatically update</li>
+            </ol>
         </div>
-
-        <div class="payment-help">
-            <div class="help-card">
-                <i class="fas fa-question-circle"></i>
-                <div class="help-content">
-                    <h4>Need Help?</h4>
-                    <p>If you don't receive the prompt within 2 minutes, please try again or contact support.</p>
-                </div>
-            </div>
+        
+        <div class="payment-status">
+            <div class="spinner"></div>
+            <p id="statusMessage">Waiting for payment confirmation...</p>
+        </div>
+        
+        <div class="action-buttons">
+            <button onclick="cancelPayment()" class="btn btn-secondary">Cancel</button>
+            <button onclick="checkStatus()" class="btn btn-primary">Check Status</button>
         </div>
     </div>
 </div>
 
 <style>
-    .payment-pending-container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
+.payment-pending-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
 
-    .payment-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
+.payment-status-card {
+    background: #0a0f1c;
+    border-radius: var(--radius);
+    border: 1px solid #2d3748;
+    padding: 2rem;
+    text-align: center;
+}
 
-    .payment-icon {
-        width: 100px;
-        height: 100px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        color: white;
-        font-size: 3rem;
-    }
+.status-header {
+    margin-bottom: 2rem;
+}
 
-    .payment-header h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #e5e7eb;
-        margin-bottom: 0.5rem;
-    }
+.status-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
 
-    .payment-subtitle {
-        font-size: 1.125rem;
-        color: #9ca3af;
-    }
+.status-header h1 {
+    color: #e5e7eb;
+    margin-bottom: 0.5rem;
+}
 
-    .payment-content {
-        background: #0a0f1c;
-        border-radius: var(--radius);
-        border: 1px solid #2d3748;
-        padding: 2rem;
-    }
+.status-header p {
+    color: #9ca3af;
+}
 
-    .info-card, .product-summary {
-        background: #111827;
-        border-radius: var(--radius);
-        border: 1px solid #2d3748;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
+.payment-details {
+    background: #111827;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
 
-    .info-card h3, .product-summary h3 {
-        color: var(--primary);
-        margin-bottom: 1rem;
-        font-size: 1.25rem;
-    }
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
 
-    .instructions {
-        color: #e5e7eb;
-        line-height: 1.6;
-        padding-left: 1.5rem;
-    }
+.detail-item:last-child {
+    margin-bottom: 0;
+}
 
-    .instructions li {
-        margin-bottom: 0.5rem;
-    }
+.label {
+    font-weight: 600;
+    color: #e5e7eb;
+}
 
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #2d3748;
-    }
+.value {
+    color: #9ca3af;
+}
 
-    .summary-item:last-child {
-        border-bottom: none;
-    }
+.payment-instructions {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
 
-    .label {
-        color: #9ca3af;
-        font-weight: 500;
-    }
+.payment-instructions h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
 
-    .value {
-        color: #e5e7eb;
-        font-weight: 600;
-    }
+.payment-instructions ol {
+    color: #e5e7eb;
+    padding-left: 1.5rem;
+}
 
-    .status {
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 600;
-    }
+.payment-instructions li {
+    margin-bottom: 0.5rem;
+}
 
-    .status.pending {
-        background: rgba(245, 158, 11, 0.2);
-        color: #f59e0b;
-        border: 1px solid rgba(245, 158, 11, 0.3);
-    }
+.payment-status {
+    margin-bottom: 2rem;
+}
 
-    .status.completed {
-        background: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-    }
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #2d3748;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
 
-    .payment-actions {
-        display: flex;
-        gap: 1rem;
-        margin: 2rem 0;
-        flex-wrap: wrap;
-    }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.875rem 1.5rem;
-        border: none;
-        border-radius: var(--radius);
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
+#statusMessage {
+    color: #e5e7eb;
+    margin: 0;
+}
 
-    .btn-primary {
-        background: var(--primary);
-        color: white;
-    }
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
 
-    .btn-primary:hover {
-        background: var(--primary-dark);
-    }
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
 
-    .btn-secondary {
-        background: #374151;
-        color: #e5e7eb;
-    }
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
 
-    .btn-secondary:hover {
-        background: #4b5563;
-    }
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
 
-    .payment-help {
-        margin-top: 2rem;
-    }
+.btn-secondary {
+    background: #374151;
+    color: #e5e7eb;
+}
 
-    .help-card {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.5rem;
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: var(--radius);
-    }
-
-    .help-card i {
-        font-size: 2rem;
-        color: var(--primary);
-    }
-
-    .help-content h4 {
-        color: #e5e7eb;
-        margin-bottom: 0.5rem;
-    }
-
-    .help-content p {
-        color: #9ca3af;
-        margin: 0;
-    }
-
-    @media (max-width: 768px) {
-        .payment-pending-container {
-            padding: 1rem;
-        }
-
-        .payment-actions {
-            flex-direction: column;
-        }
-
-        .btn {
-            width: 100%;
-            justify-content: center;
-        }
-    }
+.btn-secondary:hover {
+    background: #4b5563;
+}
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const checkStatusBtn = document.getElementById('checkStatusBtn');
-        const paymentStatus = document.getElementById('paymentStatus');
-        const checkoutRequestId = '{{ checkout_request_id }}';
+// Get the CheckoutRequestID from the HTML element
+const checkoutRequestID = document.getElementById('checkoutRequestID').textContent;
+const statusMessage = document.getElementById('statusMessage');
 
-        checkStatusBtn.addEventListener('click', function() {
-            checkStatusBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-            checkStatusBtn.disabled = true;
+console.log('Starting payment status check for:', checkoutRequestID);
 
-            fetch(`/products/check-payment-status/${checkoutRequestId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'completed') {
-                        paymentStatus.textContent = 'Payment Completed!';
-                        paymentStatus.className = 'status completed';
-                        checkStatusBtn.innerHTML = '<i class="fas fa-check"></i> Payment Verified';
-                        checkStatusBtn.disabled = true;
-                        
-                        // Redirect to product page after 2 seconds
-                        setTimeout(() => {
-                            window.location.href = `/products/view/${data.product_id}`;
-                        }, 2000);
-                    } else if (data.status === 'pending') {
-                        paymentStatus.textContent = 'Still waiting for payment...';
-                        checkStatusBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Check Again';
-                        checkStatusBtn.disabled = false;
-                    } else {
-                        paymentStatus.textContent = 'Payment not found';
-                        checkStatusBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Try Again';
-                        checkStatusBtn.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking status:', error);
-                    checkStatusBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Try Again';
-                    checkStatusBtn.disabled = false;
-                });
-        });
+// Start checking payment status immediately
+checkPaymentStatus(checkoutRequestID);
 
-        // Auto-check every 30 seconds
-        setInterval(() => {
-            if (paymentStatus.textContent !== 'Payment Completed!') {
-                checkStatusBtn.click();
-            }
-        }, 30000);
-    });
+async function checkPaymentStatus(checkoutID) {
+    const errorBox = document.getElementById("paymentError");
+    const statusText = document.getElementById("paymentStatusText");
+
+    try {
+        const res = await fetch(`/check-payment-status/${checkoutID}`);
+
+        if (!res.ok) {
+            throw new Error(`Server returned ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.status === "completed") {
+            statusText.textContent = "✅ Payment confirmed! Your product is now active.";
+            setTimeout(() => {
+                window.location.href = "/products/my-products";
+            }, 3000);
+        } 
+        else if (data.status === "pending") {
+            statusText.textContent = "⏳ Still waiting for M-Pesa confirmation...";
+            setTimeout(() => checkPaymentStatus(checkoutID), 2000);
+        } 
+        else if (data.status === "not_found") {
+            errorBox.textContent = "⚠️ Payment record not found. It may have been cancelled.";
+            statusText.textContent = "You can try listing again.";
+        } 
+        else {
+            errorBox.textContent = "❌ Payment failed or cancelled. Please try again.";
+            statusText.textContent = "Redirecting to create page...";
+            setTimeout(() => {
+                window.location.href = "/create";
+            }, 3000);
+        }
+
+    } catch (err) {
+        console.error("Payment check error:", err);
+        errorBox.textContent = "🚫 Network issue while checking payment. Please try again later.";
+        statusText.textContent = "";
+        setTimeout(() => {
+            window.location.href = "/create";
+        }, 4000);
+    }
+}
+
+function checkStatus() {
+    // Manual status check
+    const checkoutRequestID = document.getElementById('checkoutRequestID').textContent;
+    checkPaymentStatus(checkoutRequestID);
+}
+
+function cancelPayment() {
+    if (confirm('Are you sure you want to cancel this payment?')) {
+        window.location.href = "/create";
+    }
+}
+
+// Auto-check when page becomes visible
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        checkStatus();
+    }
+});
 </script>
 {% endblock %}
+[file content end]

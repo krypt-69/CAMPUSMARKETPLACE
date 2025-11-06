@@ -1,8 +1,10 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
 from flask_login import login_required, current_user
 import os
+import requests
+import base64
 from werkzeug.utils import secure_filename
-from app.models import Product, Category
+from app.models import Product, Category, Payment
 from app import db
 from app.mpesa import MpesaGateway  # We'll create this
 
@@ -111,29 +113,32 @@ def handle_mpesa_payment(request):
             description=description
         )
         
+        
         if result and result.get('ResponseCode') == '0':
             # Payment initiated successfully
             checkout_request_id = result.get('CheckoutRequestID')
             merchant_request_id = result.get('MerchantRequestID')
             
-            # Create payment record (we'll add this to models)
-            from app.models import Payment
+            # Create pending payment record with product data
             payment = Payment(
-                product_id=new_product.id,
-                user_id=current_user.id,
-                amount=listing_fee,
-                phone_number=phone_number,
-                checkout_request_id=checkout_request_id,
-                merchant_request_id=merchant_request_id,
-                status='pending'
-            )
+                    product_id=new_product.id,
+                    user_id=current_user.id,
+                    amount=listing_fee,
+                    phone_number=phone_number,
+                    checkout_request_id=checkout_request_id,
+                    merchant_request_id=merchant_request_id,
+                    status='pending'
+                )
             db.session.add(payment)
             db.session.commit()
             
             flash('M-Pesa payment initiated! Check your phone to complete the payment.', 'success')
-            return render_template('products/payment_pending.html', 
-                                product=new_product,
-                                checkout_request_id=checkout_request_id)
+            
+            # Render the payment pending page with CheckoutRequestID in a way that's easy to extract
+            return jsonify({
+                    "status": "payment_started",
+                    "checkout_request_id": checkout_request_id
+                })
         else:
             # Payment failed to initiate
             db.session.rollback()
@@ -147,134 +152,106 @@ def handle_mpesa_payment(request):
         flash('An error occurred during payment. Please try again.', 'error')
         return redirect(url_for('products.create_product'))
 
-def handle_free_listing(request):
-    """Handle free listing during beta testing"""
-    try:
-        # Get form data
-        title = request.form.get('title')
-        description = request.form.get('description')
-        price = float(request.form.get('price'))
-        condition = request.form.get('condition')
-        category_id = request.form.get('category_id')
-        is_fast_moving = bool(request.form.get('is_fast_moving'))
-        
-        # Get delivery information
-        delivery_option = request.form.get('delivery_option')
-        contact_info = ""
-        
-        if delivery_option == 'free':
-            contact_info = request.form.get('delivery_address', '')
-        elif delivery_option == 'paid':
-            delivery_fee = request.form.get('delivery_fee', '0')
-            contact_info = f"Paid delivery: KES {delivery_fee}"
-        else:  # meetup
-            contact_info = "Campus meetup - contact seller for location"
-        
-        # Handle image upload
-        image_filename = None
-        if 'image' in request.files:
-            file = request.files['image']
-            if file and file.filename != '' and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                image_filename = filename
-        
-        # Create product
-        new_product = Product(
-            title=title,
-            description=description,
-            price=price,
-            condition=condition,
-            contact_info=contact_info,
-            image=image_filename,
-            category_id=category_id,
-            is_fast_moving=is_fast_moving,
-            seller_id=current_user.id,
-            is_active=True  # Active immediately for free listings
-        )
-        
-        db.session.add(new_product)
-        db.session.commit()
-        
-        flash('Product listed successfully! (Free during beta testing)', 'success')
-        return redirect(url_for('products.my_products_list'))
-        
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Free listing error: {str(e)}")
-        flash('An error occurred while creating your listing. Please try again.', 'error')
-        return redirect(url_for('products.create_product'))
+
 
 @products_bp.route('/payment-callback', methods=['POST'])
 def payment_callback():
     """Handle M-Pesa payment callback"""
     try:
         callback_data = request.get_json()
-        
+        current_app.logger.info("🔔 Received M-Pesa callback: %s", callback_data)
+
         if not callback_data:
+            current_app.logger.warning("⚠️ No callback data received.")
             return jsonify({'ResultCode': 1, 'ResultDesc': 'Invalid data'})
-        
-        # Extract callback data
+
         result_code = callback_data.get('Body', {}).get('stkCallback', {}).get('ResultCode')
         checkout_request_id = callback_data.get('Body', {}).get('stkCallback', {}).get('CheckoutRequestID')
-        
+        current_app.logger.info(f"📦 Callback for CheckoutRequestID: {checkout_request_id}, ResultCode: {result_code}")
+
+        payment = Payment.query.filter_by(checkout_request_id=checkout_request_id).first()
+
+        # ✅ Payment SUCCESS
         if result_code == 0:
-            # Payment successful
-            from app.models import Payment, Product
-            payment = Payment.query.filter_by(checkout_request_id=checkout_request_id).first()
-            
             if payment:
                 payment.status = 'completed'
                 payment.completed_at = db.func.now()
-                
-                # Activate the product
+
                 product = Product.query.get(payment.product_id)
                 if product:
                     product.is_active = True
-                
+
                 db.session.commit()
-                
-                current_app.logger.info(f"Payment completed for product {payment.product_id}")
-        
+                current_app.logger.info(f"✅ Payment confirmed & product {payment.product_id} activated.")
+            else:
+                current_app.logger.warning(f"⚠️ No payment found for CheckoutRequestID {checkout_request_id}")
+
+        # ❌ Payment FAILED or CANCELLED
+        else:
+            if payment:
+                current_app.logger.warning(f"❌ Payment failed/cancelled for CheckoutRequestID: {checkout_request_id}")
+                product = Product.query.get(payment.product_id)
+
+                # delete product if exists and still inactive
+                if product and not product.is_active:
+                    db.session.delete(product)
+                    current_app.logger.info(f"🗑️ Deleted inactive product ID {product.id} after failed payment.")
+
+                # delete payment record
+                db.session.delete(payment)
+                db.session.commit()
+            else:
+                current_app.logger.warning(f"⚠️ No matching payment record to clean for failed transaction.")
+
         return jsonify({'ResultCode': 0, 'ResultDesc': 'Success'})
-        
+
     except Exception as e:
-        current_app.logger.error(f"Callback error: {str(e)}")
+        current_app.logger.error(f"Callback error: {str(e)}", exc_info=True)
         return jsonify({'ResultCode': 1, 'ResultDesc': 'Error'})
 
 @products_bp.route('/check-payment-status/<checkout_request_id>')
 @login_required
 def check_payment_status(checkout_request_id):
-    """Check payment status for a pending payment"""
     from app.models import Payment
     payment = Payment.query.filter_by(checkout_request_id=checkout_request_id).first()
-    
+    current_app.logger.info(f"Checking payment status for {checkout_request_id}")
+
     if not payment:
         return jsonify({'status': 'not_found'})
-    
+
     if payment.status == 'completed':
-        return jsonify({
-            'status': 'completed',
-            'product_id': payment.product_id
-        })
+        current_app.logger.info("Payment already completed ✅")
+        return jsonify({'status': 'completed', 'product_id': payment.product_id})
+
     elif payment.status == 'pending':
-        # Check with M-Pesa
+        current_app.logger.info(f"🔎 Checking M-Pesa status for {checkout_request_id}")
         mpesa = MpesaGateway()
-        status_result = mpesa.check_transaction_status(checkout_request_id)
-        
-        if status_result and status_result.get('ResultCode') == 0:
-            payment.status = 'completed'
-            payment.completed_at = db.func.now()
-            
-            # Activate product
-            product = Product.query.get(payment.product_id)
-            if product:
-                product.is_active = True
-            
-            db.session.commit()
-            return jsonify({'status': 'completed', 'product_id': payment.product_id})
-    
-    return jsonify({'status': 'pending'})
+        try:
+            status_result = mpesa.check_transaction_status(checkout_request_id)
+            current_app.logger.debug(f"🔁 M-Pesa Query Response: {status_result}")
+
+            if status_result and status_result.get('ResultCode') == 0:
+                payment.status = 'completed'
+                payment.completed_at = db.func.now()
+                product = Product.query.get(payment.product_id)
+                if product:
+                    product.is_active = True
+                db.session.commit()
+                return jsonify({'status': 'completed', 'product_id': payment.product_id})
+
+            # if user canceled or timed out
+            elif status_result and status_result.get('ResultCode') in [1032, 2001, 1]:
+                current_app.logger.warning(f"❌ Payment failed or cancelled during check for {checkout_request_id}")
+                payment.status = 'failed'
+                db.session.commit()
+                return jsonify({'status': 'failed'})
+
+            else:
+                return jsonify({'status': 'pending'})
+
+        except Exception as e:
+            current_app.logger.error(f"⚠️ Status Check Error: {str(e)}", exc_info=True)
+            return jsonify({'status': 'pending'})
 
 # Keep your existing routes (they remain the same)
 @products_bp.route('/my-products')
@@ -361,3 +338,43 @@ def mark_sold(product_id):
     db.session.commit()
     
     return jsonify({'success': True, 'message': 'Product marked as sold!'})
+
+# Add this to your products/routes.py for testing
+@products_bp.route('/test-mpesa')
+def test_mpesa():
+    from app.mpesa import MpesaGateway
+    
+    mpesa = MpesaGateway()
+    
+    # Test STK push with test phone number
+    test_phone = "254715982985"  # Sandbox test number
+    result, message = mpesa.stk_push(
+        phone_number=test_phone,
+        amount=1,  # 1 KES for testing
+        account_reference="TEST123",
+        description="Test payment"
+    )
+    
+    if result and result.get('ResponseCode') == '0':
+        return f"✅ SUCCESS: STK push initiated - {message}<br>CheckoutRequestID: {result.get('CheckoutRequestID')}"
+    else:
+        return f"❌ FAILED: {message}"
+@products_bp.route('/debug-token')
+def debug_token():
+    from app.mpesa import MpesaGateway
+    
+    mpesa = MpesaGateway()
+    token = mpesa.get_access_token()
+    
+    if token:
+        return f"✅ SUCCESS: Got access token - {token[:20]}..."
+    else:
+        return "❌ FAILED: No access token received"
+@products_bp.route("/payment-pending/<checkout_request_id>")
+@login_required
+def payment_pending(checkout_request_id):
+    return render_template("products/payment_pending.html",
+       checkout_request_id=checkout_request_id,
+       product_title="Your product")
+
+

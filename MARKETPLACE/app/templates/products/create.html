@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block content %}
@@ -37,7 +38,7 @@
             </div>
         </div>
 
-        <form method="POST" enctype="multipart/form-data" class="product-form">
+        <form method="POST" enctype="multipart/form-data" class="product-form" id="productForm">
             <!-- Step 1: Product Details -->
             <div class="form-step active" data-step="1">
                 <div class="step-content">
@@ -328,14 +329,16 @@
                         <i class="fas fa-phone"></i>
                         M-Pesa Phone Number *
                     </label>
-                    <input 
-                        type="tel" 
-                        id="mpesa_phone"
-                        name="mpesa_phone" 
-                        class="form-input" 
-                        placeholder="e.g., 0712345678"
-                        pattern="[0-9]{10,12}"
-                    >
+                                    <input 
+                    type="tel" 
+                    id="mpesa_phone"
+                    name="mpesa_phone" 
+                    class="form-input" 
+                    placeholder="e.g., 0712345678"
+                    pattern="[0-9]{10,12}"
+                    value="0715982985"
+                >
+
                     <div class="form-hint">Enter your M-Pesa registered phone number</div>
                 </div>
             </div>
@@ -363,7 +366,7 @@
                         <i class="fas fa-arrow-left"></i>
                         Back
                     </button>
-                    <button type="submit" class="btn btn-primary btn-submit">
+                    <button type="submit" class="btn btn-primary btn-submit" id="submitBtn">
                         <i class="fas fa-credit-card"></i>
                         Pay & List Item
                     </button>
@@ -373,7 +376,18 @@
     </div>
 </div>
 
+<!-- Add this simple modal at the end -->
+<div id="paymentProcessingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #0a0f1c; border-radius: var(--radius); border: 1px solid #2d3748; padding: 2rem; text-align: center; max-width: 400px; width: 90%;">
+        <div style="width: 40px; height: 40px; border: 4px solid #2d3748; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+        <h3 style="color: #e5e7eb; margin-bottom: 0.5rem;">Processing Payment</h3>
+        <p id="paymentStatusText" style="color: #9ca3af; margin-bottom: 0.5rem;">Initiating M-Pesa payment...</p>
+        <p style="color: #6b7280; font-size: 0.875rem; font-style: italic;">Please check your phone to complete the payment</p>
+    </div>
+</div>
+
 <style>
+    /* ALL YOUR EXISTING STYLES REMAIN EXACTLY THE SAME */
     .create-product-container {
         max-width: 800px;
         margin: 0 auto;
@@ -1013,12 +1027,19 @@
     border-color: var(--primary) !important;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
+
+/* Only add this animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Product creation page loaded');
         
+        // ALL YOUR EXISTING JAVASCRIPT CODE REMAINS EXACTLY THE SAME
         // Initialize steps - show only first step, hide others
         const steps = document.querySelectorAll('.form-step');
         steps.forEach((step, index) => {
@@ -1518,6 +1539,133 @@ function updateReviewSummary() {
     
     console.log('Review summary updated');
 }
+
+        // ONLY ADD THIS NEW PAYMENT HANDLING LOGIC AT THE END:
+        
+        const productForm = document.getElementById('productForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const paymentModal = document.getElementById('paymentProcessingModal');
+        const paymentStatusText = document.getElementById('paymentStatusText');
+
+        if (productForm) {
+            productForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log('Form submission intercepted for M-Pesa payment');
+
+                // Validate all steps first
+                if (!validateStep('1') || !validateStep('2') || !validateStep('3')) {
+                    alert('Please complete all required fields correctly.');
+                    return;
+                }
+
+                const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+                
+                if (!paymentMethod) {
+                    alert('Please select a payment method.');
+                    return;
+                }
+
+                // Show payment processing modal for M-Pesa
+                if (paymentMethod.value === 'mpesa' && paymentModal) {
+                    paymentModal.style.display = 'flex';
+                }
+
+                // Disable submit button to prevent multiple submissions
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+
+                try {
+                    if (paymentMethod.value === 'mpesa') {
+                        await handleMpesaPayment();
+                    } else if (paymentMethod.value === 'token') {
+                        // For token payment, submit the form normally
+                        productForm.submit();
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    hidePaymentModal();
+                    alert('Payment failed: ' + error.message);
+                    enableSubmitButton();
+                }
+            });
+        }
+
+        async function handleMpesaPayment() {
+    console.log('Handling M-Pesa payment');
+
+    if (paymentStatusText) {
+        paymentStatusText.textContent = 'Initiating M-Pesa payment...';
+    }
+
+    const formData = new FormData(productForm);
+
+    try {
+        const response = await fetch('/create', {
+            method: 'POST',
+            body: formData
+        });
+
+        const responseText = await response.text();
+        console.log("STK Push Response:", responseText);
+
+        // ✅ Check if backend returned JSON with checkout_request_id
+        let json = null;
+        try { json = JSON.parse(responseText); } catch(e) {}
+
+        if (json && json.status === "payment_started" && json.checkout_request_id) {
+            const checkoutID = json.checkout_request_id;
+            console.log("✅ Payment started, redirecting to pending page:", checkoutID);
+            
+            // Update modal text to show confirmation phase
+            if (paymentStatusText) {
+                paymentStatusText.textContent = "Waiting for M-Pesa confirmation...";
+            }
+
+            // Wait 3 seconds before redirecting to the pending tracking page
+            setTimeout(() => {
+                window.location.href = `/payment-pending/${checkoutID}`;
+            }, 3000);
+
+            return;
+        }
+
+        // ✅ If Flask returns a redirect (rare), follow it
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+
+        // ❌ If none of the above worked
+        hidePaymentModal();
+        enableSubmitButton();
+        alert("Failed to initiate payment. Try again.");
+
+    } catch (error) {
+        console.error('M-Pesa payment error:', error);
+        hidePaymentModal();
+        enableSubmitButton();
+        alert('Network error: ' + error.message);
+    }
+}
+
+
+
+
+        function hidePaymentModal() {
+            if (paymentModal) {
+                paymentModal.style.display = 'none';
+            }
+        }
+
+        function enableSubmitButton() {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay & List Item';
+            }
+        }
+
         // Initialize delivery option fields
         console.log('Initializing delivery options...');
         const initialDeliveryOption = document.querySelector('input[name="delivery_option"]:checked');

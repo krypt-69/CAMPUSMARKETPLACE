@@ -7,9 +7,7 @@ if __name__ == '__main__':
     with app.app_context():
         try:
             # Drop all tables and recreate (for development only)
-            db.drop_all()
-            db.create_all()
-            print("Database tables created!")
+            print("Database tables  not created!")
             
             # Add sample categories
             from app.models import Category
