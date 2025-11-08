@@ -4,742 +4,705 @@
 <!-- Hero Section -->
 <section class="hero">
     <div class="hero-content">
-        <h1 class="hero-title">Welcome to Campus Marketplace</h1>
-        <p class="hero-subtitle">Your trusted platform to buy and sell items within your campus community. Safe, reliable, and student-focused.</p>
+        <h1 class="hero-title">CampusMarket</h1>
+        <p class="hero-subtitle">Buy & Sell on Campus</p>
         <div class="hero-buttons">
             <a href="{{ url_for('products.all_products') }}" class="btn btn-primary">
-                <i class="fas fa-shopping-bag"></i>Shop Now
+                <i class="fas fa-shopping-bag"></i>Shop
             </a>
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for('products.create_product') }}" class="btn btn-secondary">
-                    <i class="fas fa-plus"></i>Sell Item
+                    <i class="fas fa-plus"></i>Sell
                 </a>
             {% else %}
                 <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i>Join
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="hero-animation">
+        <div class="floating-icons">
+            <i class="fas fa-laptop"></i>
+            <i class="fas fa-book"></i>
+            <i class="fas fa-couch"></i>
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats -->
+<div class="quick-stats">
+    <div class="stat">
+        <strong>50+</strong>
+        <span>Students</span>
+    </div>
+    <div class="stat">
+        <strong>10+</strong>
+        <span>Sold</span>
+    </div>
+    <div class="stat">
+        <strong>98%</strong>
+        <span>Rating</span>
+    </div>
+</div>
+
+<!-- Fast Moving Items -->
+<section class="compact-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-bolt"></i>
+            Hot Deals
+        </h2>
+        <a href="{{ url_for('products.all_products') }}" class="view-all">View All</a>
+    </div>
+
+    {% if fast_moving %}
+        <div class="compact-grid">
+            {% for product in fast_moving %}
+                <div class="compact-card" onclick="window.location='{{ url_for('products.view_product', product_id=product.id) }}'">
+                    <div class="card-badge">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="card-image">
+                        {% if product.image %}
+                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
+                        {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ product.title|truncate(20) }}</h3>
+                        <p class="card-price">KES {{ "{:,.0f}".format(product.price) }}</p>
+                        <div class="card-meta">
+                            <span class="meta-tag">{{ product.condition|title|truncate(8) }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-compact">
+            <i class="fas fa-box-open"></i>
+            <p>No hot deals yet</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="btn-small">
+                    <i class="fas fa-plus"></i>List Item
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- Latest Items -->
+<section class="compact-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-boxes"></i>
+            Latest
+        </h2>
+        <a href="{{ url_for('products.all_products') }}" class="view-all">View All</a>
+    </div>
+
+    {% if all_products %}
+        <div class="compact-grid">
+            {% for product in all_products %}
+                <div class="compact-card" onclick="window.location='{{ url_for('products.view_product', product_id=product.id) }}'">
+                    <div class="card-image">
+                        {% if product.image %}
+                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
+                        {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ product.title|truncate(20) }}</h3>
+                        <p class="card-price">KES {{ "{:,.0f}".format(product.price) }}</p>
+                        <div class="card-meta">
+                            <span class="meta-tag">{{ product.condition|title|truncate(8) }}</span>
+                            <span class="meta-category">{{ product.category.name|truncate(8) if product.category else 'General' }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-compact">
+            <i class="fas fa-box-open"></i>
+            <p>No items yet</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="btn-small">
+                    <i class="fas fa-plus"></i>List Item
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn-small">
                     <i class="fas fa-user-plus"></i>Join Now
                 </a>
             {% endif %}
         </div>
-    </div>
-    <div class="hero-image">
-        <div class="floating-cards">
-            <div class="floating-card card-1">
-                <i class="fas fa-laptop"></i>
-                <span>Electronics</span>
-            </div>
-            <div class="floating-card card-2">
-                <i class="fas fa-book"></i>
-                <span>Books</span>
-            </div>
-            <div class="floating-card card-3">
-                <i class="fas fa-couch"></i>
-                <span>Furniture</span>
-            </div>
-            <div class="floating-card card-4">
-                <i class="fas fa-mobile-alt"></i>
-                <span>Gadgets</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Stats Section -->
-<section class="stats-section">
-    <div class="stats-container">
-        <div class="stat-item">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">50+</h3>
-                <p class="stat-label">Active Students</p>
-            </div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-icon">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">10+</h3>
-                <p class="stat-label">Items Sold</p>
-            </div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-icon">
-                <i class="fas fa-star"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">98%</h3>
-                <p class="stat-label">Satisfaction Rate</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Fast Moving Items Section -->
-<section class="products-section">
-    <div class="section-header">
-        <h2 class="section-title">
-            <i class="fas fa-bolt"></i>
-            Fast Moving Items
-        </h2>
-        <p class="section-subtitle">Hot deals that won't last long! Grab them before they're gone.</p>
-    </div>
-
-    {% if fast_moving %}
-        <div class="products-grid">
-            {% for product in fast_moving %}
-                <div class="product-card">
-                    <div class="product-badge">
-                        <i class="fas fa-bolt"></i>
-                        Hot Deal
-                    </div>
-                    <div class="product-image">
-                        {% if product.image %}
-                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
-                        {% else %}
-                            <div class="product-image-placeholder">
-                                <i class="fas fa-camera"></i>
-                                <span>No Image</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="product-content">
-                        <h3 class="product-title">{{ product.title }}</h3>
-                        <p class="product-description">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
-                        
-                        <div class="product-meta">
-                            <div class="product-condition">
-                                <i class="fas fa-tag"></i>
-                                {{ product.condition|title }}
-                            </div>
-                            <div class="product-category">
-                                <i class="fas fa-layer-group"></i>
-                                {{ product.category.name if product.category else 'General' }}
-                            </div>
-                        </div>
-                        
-                        <div class="product-footer">
-                            <div class="product-price">
-                                KES {{ "{:,.2f}".format(product.price) }}
-                            </div>
-                            <a href="{{ url_for('products.view_product', product_id=product.id) }}" class="btn-view">
-                                <i class="fas fa-eye"></i>
-                                View Details
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-box-open"></i>
-            </div>
-            <h3>No Fast Moving Items Yet</h3>
-            <p>Be the first to list your item and get featured here!</p>
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('products.create_product') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>List Your First Item
-                </a>
-            {% else %}
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i>Join to Start Selling
-                </a>
-            {% endif %}
-        </div>
-    {% endif %}
-</section>
-<!-- Add this section after Fast Moving Items -->
-<section class="all-products-section">
-    <div class="section-header">
-        <h2 class="section-title">
-            <i class="fas fa-boxes"></i>
-            Latest Items
-        </h2>
-        <p class="section-subtitle">Browse through all available items on campus</p>
-    </div>
-
-    {% if all_products %}
-        <div class="products-grid">
-            {% for product in all_products %}
-                <div class="product-card">
-                    <div class="product-image">
-                        {% if product.image %}
-                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
-                        {% else %}
-                            <div class="product-image-placeholder">
-                                <i class="fas fa-camera"></i>
-                                <span>No Image</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="product-content">
-                        <h3 class="product-title">{{ product.title }}</h3>
-                        <p class="product-description">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
-                        
-                        <div class="product-meta">
-                            <div class="product-condition">
-                                <i class="fas fa-tag"></i>
-                                {{ product.condition|title }}
-                            </div>
-                            <div class="product-category">
-                                <i class="fas fa-layer-group"></i>
-                                {{ product.category.name if product.category else 'General' }}
-                            </div>
-                        </div>
-                        
-                        <div class="product-footer">
-                            <div class="product-price">
-                                KES {{ "{:,.2f}".format(product.price) }}
-                            </div>
-                            {% if current_user.is_authenticated %}
-                                <a href="{{ url_for('products.view_product', product_id=product.id) }}" class="btn-view">
-                                    <i class="fas fa-eye"></i>
-                                    View Details
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('auth.login', next=url_for('products.view_product', product_id=product.id)) }}" class="btn-view">
-                                    <i class="fas fa-sign-in-alt"></i>
-                                    Login to View
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        
-        <div class="view-all-container">
-            <a href="{{ url_for('products.all_products') }}" class="btn btn-secondary">
-                <i class="fas fa-th-list"></i>
-                View All Products
-            </a>
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-box-open"></i>
-            </div>
-            <h3>No Products Available</h3>
-            <p>Be the first to list an item on campus!</p>
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('products.create_product') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>List Your First Item
-                </a>
-            {% else %}
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i>Join to Start Selling
-                </a>
-            {% endif %}
-        </div>
     {% endif %}
 </section>
 
-<!-- Features Section -->
-<section class="features-section">
-    <div class="section-header">
-        <h2 class="section-title">Why Choose CampusMarket?</h2>
-        <p class="section-subtitle">We make buying and selling on campus simple and secure</p>
+<!-- Quick Features -->
+<div class="quick-features">
+    <div class="feature">
+        <i class="fas fa-shield-alt"></i>
+        <span>Secure</span>
     </div>
-    
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h3>Secure Payments</h3>
-            <p>Safe and reliable payment options including M-Pesa and campus tokens with buyer protection.</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">
-                <i class="fas fa-rocket"></i>
-            </div>
-            <h3>Fast Delivery</h3>
-            <p>Quick campus-wide delivery and meetup options. Get your items within hours, not days.</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <h3>Campus Community</h3>
-            <p>Buy and sell within your trusted campus network. Verified students only for your safety.</p>
-        </div>
-        
-        <div class="feature-card">
-            <div class="feature-icon">
-                <i class="fas fa-tags"></i>
-            </div>
-            <h3>Best Prices</h3>
-            <p>Get student-friendly prices on textbooks, electronics, furniture, and everything in between.</p>
-        </div>
+    <div class="feature">
+        <i class="fas fa-rocket"></i>
+        <span>Fast</span>
     </div>
-</section>
+    <div class="feature">
+        <i class="fas fa-users"></i>
+        <span>Trusted</span>
+    </div>
+    <div class="feature">
+        <i class="fas fa-tags"></i>
+        <span>Cheap</span>
+    </div>
+</div>
 
 <style>
-    :root {
-        --primary: #3b82f6;
-        --primary-dark: #2563eb;
-        --secondary: #f59e0b;
-        --dark: #111827;
-        --darker: #0f1420;
-        --light: #1f2937;
-        --lighter: #374151;
-        --gray: #9ca3af;
-        --gray-light: #4b5563;
-        --success: #10b981;
-        --error: #ef4444;
-        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-        --radius: 8px;
-    }
-
-    body {
-        background-color: var(--dark);
-        color: #e5e7eb;
-    }
-    .all-products-section {
-    margin: 4rem 0;
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary: #f59e0b;
+    --dark: #111827;
+    --darker: #0f1420;
+    --light: #1f2937;
+    --lighter: #374151;
+    --gray: #9ca3af;
+    --gray-light: #4b5563;
+    --success: #10b981;
+    --error: #ef4444;
+    --radius: 12px;
+    --radius-sm: 8px;
 }
 
-.view-all-container {
+/* Hero Section - Ultra Compact */
+.hero {
+    background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+    padding: 1.5rem 1rem;
     text-align: center;
-    margin-top: 3rem;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
 }
 
-    /* Hero Section */
+.hero-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-bottom: 1rem;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+}
+
+.btn-secondary:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Floating Icons Animation */
+.hero-animation {
+    margin-top: 1rem;
+    height: 60px;
+    position: relative;
+}
+
+.floating-icons {
+    position: relative;
+    height: 100%;
+}
+
+.floating-icons i {
+    position: absolute;
+    font-size: 1.2rem;
+    color: var(--primary);
+    opacity: 0.7;
+    animation: floatBounce 3s ease-in-out infinite;
+}
+
+.floating-icons i:nth-child(1) { left: 10%; animation-delay: 0s; }
+.floating-icons i:nth-child(2) { left: 30%; animation-delay: 0.5s; }
+.floating-icons i:nth-child(3) { left: 50%; animation-delay: 1s; }
+.floating-icons i:nth-child(4) { left: 70%; animation-delay: 1.5s; }
+
+@keyframes floatBounce {
+    0%, 100% { 
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
+    }
+    25% { 
+        transform: translateY(-15px) scale(1.1);
+        opacity: 1;
+    }
+    50% { 
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
+    }
+    75% { 
+        transform: translateY(-8px) scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.stat {
+    background: var(--light);
+    padding: 0.75rem 0.5rem;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    border: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+}
+
+.stat:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.stat strong {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.2rem;
+}
+
+.stat span {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+/* Compact Sections */
+.compact-section {
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    color: var(--secondary);
+}
+
+.view-all {
+    font-size: 0.75rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.view-all:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Ultra Compact Grid - 3 columns by default */
+.compact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+/* Ultra Compact Cards */
+.compact-card {
+    background: var(--light);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    animation: cardSlideIn 0.5s ease-out;
+}
+
+.compact-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-badge {
+    position: absolute;
+    top: 0.3rem;
+    left: 0.3rem;
+    background: var(--secondary);
+    color: var(--dark);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    z-index: 2;
+}
+
+.card-image {
+    height: 80px;
+    background: var(--lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.compact-card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+.image-placeholder {
+    color: var(--gray);
+    font-size: 1.2rem;
+}
+
+.card-content {
+    padding: 0.6rem;
+}
+
+.card-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.card-price {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.4rem;
+}
+
+.card-meta {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.meta-tag, .meta-category {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+    background: var(--lighter);
+    color: var(--gray);
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.meta-tag {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+/* Empty State */
+.empty-compact {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: var(--light);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-light);
+}
+
+.empty-compact i {
+    font-size: 2rem;
+    color: var(--gray-light);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.empty-compact p {
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.btn-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+/* Quick Features */
+.quick-features {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin: 2rem 0.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--gray-light);
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.feature {
+    text-align: center;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.feature:hover {
+    transform: translateY(-2px);
+}
+
+.feature i {
+    font-size: 1.2rem;
+    color: var(--primary);
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+.feature span {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+/* Responsive Design - Even More Compact */
+@media (max-width: 480px) {
     .hero {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4rem;
-        align-items: center;
-        padding: 4rem 0;
-        background: linear-gradient(135deg, var(--darker) 0%, var(--light) 100%);
-        border-radius: var(--radius);
-        margin-bottom: 4rem;
+        padding: 1rem 0.75rem;
     }
-
-    .hero-content {
-        padding: 0 2rem;
-    }
-
+    
     .hero-title {
-        font-size: 3rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 1.5rem;
-        line-height: 1.2;
+        font-size: 1.3rem;
     }
-
+    
     .hero-subtitle {
-        font-size: 1.25rem;
-        color: var(--gray);
-        margin-bottom: 2rem;
-        line-height: 1.6;
+        font-size: 0.8rem;
     }
-
-    .hero-buttons {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
+    
     .btn {
-        display: inline-flex;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .compact-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+    }
+    
+    .card-image {
+        height: 70px;
+    }
+    
+    .card-content {
+        padding: 0.5rem;
+    }
+    
+    .card-title {
+        font-size: 0.7rem;
+    }
+    
+    .card-price {
+        font-size: 0.8rem;
+    }
+    
+    .quick-stats,
+    .quick-features {
+        gap: 0.4rem;
+    }
+    
+    .stat,
+    .feature {
+        padding: 0.6rem 0.4rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .compact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 2rem;
-        border-radius: var(--radius);
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
     }
-
-    .btn-primary {
-        background: var(--primary);
-        color: white;
+    
+    .btn {
+        width: 120px;
+        justify-content: center;
     }
-
-    .btn-primary:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-    }
-
-    .btn-secondary {
-        background: var(--light);
-        color: var(--primary);
-        border: 2px solid var(--primary);
-    }
-
-    .btn-secondary:hover {
-        background: var(--primary);
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    /* Floating Cards Animation */
-    .floating-cards {
-        position: relative;
-        height: 300px;
-    }
-
-    .floating-card {
-        position: absolute;
-        background: var(--light);
-        padding: 1rem 1.5rem;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        display: flex;
-        align-items: center;
+    
+    .quick-features {
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
-        font-weight: 600;
-        color: #e5e7eb;
-        animation: float 3s ease-in-out infinite;
-        border: 1px solid var(--gray-light);
     }
+}
 
-    .floating-card i {
-        font-size: 1.5rem;
-        color: var(--primary);
+/* 4 columns on larger phones */
+@media (min-width: 481px) and (max-width: 768px) {
+    .compact-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
+}
 
-    .card-1 { top: 20px; left: 20px; animation-delay: 0s; }
-    .card-2 { top: 80px; right: 40px; animation-delay: 0.5s; }
-    .card-3 { bottom: 80px; left: 40px; animation-delay: 1s; }
-    .card-4 { bottom: 20px; right: 20px; animation-delay: 1.5s; }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+/* 5 columns on tablets */
+@media (min-width: 769px) {
+    .compact-grid {
+        grid-template-columns: repeat(5, 1fr);
     }
+}
 
-    /* Stats Section */
-    .stats-section {
-        background: var(--light);
-        padding: 3rem 0;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        margin-bottom: 4rem;
-        border: 1px solid var(--gray-light);
-    }
+/* Staggered animation for cards */
+.compact-card:nth-child(odd) {
+    animation-delay: 0.1s;
+}
 
-    .stats-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 2rem;
-        max-width: 800px;
-        margin: 0 auto;
-    }
+.compact-card:nth-child(even) {
+    animation-delay: 0.2s;
+}
 
-    .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        text-align: left;
-    }
+/* Loading animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
 
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-    }
-
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #e5e7eb;
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-label {
-        color: var(--gray);
-        font-weight: 500;
-    }
-
-    /* Section Headers */
-    .section-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-
-    .section-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #e5e7eb;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-    }
-
-    .section-title i {
-        color: var(--secondary);
-    }
-
-    .section-subtitle {
-        font-size: 1.125rem;
-        color: var(--gray);
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    /* Products Grid */
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 4rem;
-    }
-
-    .product-card {
-        background: var(--light);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        transition: all 0.3s ease;
-        position: relative;
-        border: 1px solid var(--gray-light);
-    }
-
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        border-color: var(--primary);
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 1rem;
-        left: 1rem;
-        background: var(--secondary);
-        color: var(--dark);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        z-index: 2;
-    }
-
-    .product-image {
-        height: 200px;
-        background: var(--lighter);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-
-    .product-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .product-image-placeholder {
-        text-align: center;
-        color: var(--gray);
-    }
-
-    .product-image-placeholder i {
-        font-size: 3rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .product-content {
-        padding: 1.5rem;
-    }
-
-    .product-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #e5e7eb;
-        margin-bottom: 0.5rem;
-    }
-
-    .product-description {
-        color: var(--gray);
-        margin-bottom: 1rem;
-        line-height: 1.5;
-    }
-
-    .product-meta {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .product-condition, .product-category {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        color: var(--gray);
-    }
-
-    .product-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .product-price {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .btn-view {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: var(--primary);
-        color: white;
-        text-decoration: none;
-        border-radius: var(--radius);
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .btn-view:hover {
-        background: var(--primary-dark);
-        transform: translateY(-1px);
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: var(--light);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        border: 1px solid var(--gray-light);
-    }
-
-    .empty-icon {
-        font-size: 4rem;
-        color: var(--gray-light);
-        margin-bottom: 1.5rem;
-    }
-
-    .empty-state h3 {
-        font-size: 1.5rem;
-        color: #e5e7eb;
-        margin-bottom: 1rem;
-    }
-
-    .empty-state p {
-        color: var(--gray);
-        margin-bottom: 2rem;
-    }
-
-    /* Features Section */
-    .features-section {
-        padding: 4rem 0;
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-    }
-
-    .feature-card {
-        text-align: center;
-        padding: 2rem;
-        background: var(--light);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        transition: all 0.3s ease;
-        border: 1px solid var(--gray-light);
-    }
-
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-        border-color: var(--primary);
-    }
-
-    .feature-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        color: white;
-        font-size: 2rem;
-    }
-
-    .feature-card h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #e5e7eb;
-        margin-bottom: 1rem;
-    }
-
-    .feature-card p {
-        color: var(--gray);
-        line-height: 1.6;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .hero {
-            grid-template-columns: 1fr;
-            text-align: center;
-            gap: 2rem;
-            padding: 2rem 0;
-        }
-
-        .hero-title {
-            font-size: 2rem;
-        }
-
-        .hero-buttons {
-            justify-content: center;
-        }
-
-        .floating-cards {
-            height: 200px;
-        }
-
-        .section-title {
-            font-size: 2rem;
-        }
-
-        .products-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .stats-container {
-            grid-template-columns: 1fr;
-        }
-
-        .stat-item {
-            justify-content: center;
-            text-align: center;
-        }
-    }
+.compact-card.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading animation
+    const cards = document.querySelectorAll('.compact-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.05}s`;
+    });
+    
+    // Add touch feedback
+    cards.forEach(card => {
+        card.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        card.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+    });
+    
+    // Parallax effect for hero
+    const hero = document.querySelector('.hero');
+    window.addEventListener('scroll', function() {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
+        hero.style.transform = `translateY(${rate}px)`;
+    });
+});
 </script>
 {% endblock %}

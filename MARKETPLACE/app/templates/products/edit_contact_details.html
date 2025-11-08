@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="contact-details-container">
+    <div class="contact-header">
+        <h1>
+            <i class="fas fa-address-card"></i>
+            Contact Details
+        </h1>
+        <p>Set up your contact information for buyers of: <strong>{{ product.title }}</strong></p>
+    </div>
+    
+    <div class="contact-form-container">
+        <form method="POST" class="contact-form">
+            <div class="form-section">
+                <h3>Contact Information</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone_number">
+                            <i class="fas fa-phone"></i>
+                            Phone Number *
+                        </label>
+                        <input type="tel" 
+                               id="phone_number" 
+                               name="phone_number" 
+                               value="{{ current_user.phone_number or '' }}"
+                               placeholder="0712345678"
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="whatsapp_number">
+                            <i class="fab fa-whatsapp"></i>
+                            WhatsApp Number
+                        </label>
+                        <input type="tel" 
+                               id="whatsapp_number" 
+                               name="whatsapp_number" 
+                               value="{{ current_user.whatsapp_number or '' }}"
+                               placeholder="0712345678">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           value="{{ current_user.email or '' }}"
+                           placeholder="your.email@example.com">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Location Information</h3>
+                
+                <div class="form-group">
+                    <label for="campus_location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Campus Location *
+                    </label>
+                    <select id="campus_location" name="campus_location" required>
+                        <option value="">Select Campus</option>
+                        <option value="Main Campus" {% if current_user.campus_location == 'Main Campus' %}selected{% endif %}>Main Campus</option>
+                        <option value="West Campus" {% if current_user.campus_location == 'West Campus' %}selected{% endif %}>West Campus</option>
+                        <option value="East Campus" {% if current_user.campus_location == 'East Campus' %}selected{% endif %}>East Campus</option>
+                        <option value="South Campus" {% if current_user.campus_location == 'South Campus' %}selected{% endif %}>South Campus</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hostel_name">
+                            <i class="fas fa-building"></i>
+                            Hostel Name
+                        </label>
+                        <input type="text" 
+                               id="hostel_name" 
+                               name="hostel_name" 
+                               value="{{ current_user.hostel_name or '' }}"
+                               placeholder="e.g., Hostel A">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hostel_room">
+                            <i class="fas fa-door-open"></i>
+                            Room Number
+                        </label>
+                        <input type="text" 
+                               id="hostel_room" 
+                               name="hostel_room" 
+                               value="{{ current_user.hostel_room or '' }}"
+                               placeholder="e.g., Room 101">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Contact Preferences</h3>
+                
+                <div class="form-group">
+                    <label for="contact_preference">
+                        <i class="fas fa-comments"></i>
+                        Preferred Contact Method
+                    </label>
+                    <select id="contact_preference" name="contact_preference">
+                        <option value="whatsapp" {% if current_user.contact_preference == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+                        <option value="call" {% if current_user.contact_preference == 'call' %}selected{% endif %}>Phone Call</option>
+                        <option value="sms" {% if current_user.contact_preference == 'sms' %}selected{% endif %}>SMS</option>
+                        <option value="email" {% if current_user.contact_preference == 'email' %}selected{% endif %}>Email</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ url_for('products.view_product', product_id=product.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Product
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Contact Details
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="contact-preview">
+        <h3>Preview for Buyers</h3>
+        <div class="preview-card">
+            <p>Buyers will see this information after paying the unlock fee:</p>
+            <div class="preview-details">
+                <div><strong>Phone:</strong> {{ current_user.phone_number or 'Not set' }}</div>
+                <div><strong>WhatsApp:</strong> {{ current_user.whatsapp_number or 'Not set' }}</div>
+                <div><strong>Email:</strong> {{ current_user.email or 'Not set' }}</div>
+                <div><strong>Campus:</strong> {{ current_user.campus_location or 'Not set' }}</div>
+                <div><strong>Hostel:</strong> {{ current_user.hostel_name or 'Not set' }} {{ current_user.hostel_room or '' }}</div>
+                <div><strong>Preferred Contact:</strong> {{ current_user.contact_preference|title or 'Not set' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.contact-details-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.contact-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.contact-header h1 {
+    font-size: 2rem;
+    color: #e5e7eb;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.contact-header p {
+    color: #9ca3af;
+}
+
+.contact-form-container {
+    background: #0a0f1c;
+    border: 1px solid #2d3748;
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #2d3748;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-section h3 {
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #e5e7eb;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-group label i {
+    color: var(--primary);
+    width: 16px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #111827;
+    border: 2px solid #2d3748;
+    border-radius: var(--radius);
+    color: #e5e7eb;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.contact-preview {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.contact-preview h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.preview-card {
+    background: #0a0f1c;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.preview-details {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.preview-details div {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #2d3748;
+}
+
+.preview-details div:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .contact-details-container {
+        padding: 0 0.75rem;
+    }
+    
+    .contact-form-container {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}

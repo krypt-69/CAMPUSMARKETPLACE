@@ -1,5 +1,3 @@
-[file name]: payment_pending.html
-[file content begin]
 {% extends "base.html" %}
 
 {% block content %}
@@ -7,16 +5,16 @@
     <div class="payment-status-card">
         <div class="status-header">
             <div class="status-icon">
-                <i class="fas fa-mobile-alt"></i>
+                <i class="fas fa-bullhorn"></i>
             </div>
-            <h1>Complete Your Payment</h1>
+            <h1>Complete Advertisement Payment</h1>
             <p>Check your phone to complete the M-Pesa payment</p>
         </div>
         
         <div class="payment-details">
             <div class="detail-item">
-                <span class="label">Product:</span>
-                <span class="value">{{ product_title }}</span>
+                <span class="label">Service:</span>
+                <span class="value">Product Advertisement</span>
             </div>
             <div class="detail-item">
                 <span class="label">Reference:</span>
@@ -33,17 +31,14 @@
                 <li>This page will automatically update</li>
             </ol>
         </div>
-        <!-- Add this right after the payment-status div -->
-<div class="payment-status">
-    <div class="spinner"></div>
-    <p id="statusMessage">Waiting for payment confirmation...</p>
-</div>
-
-<!-- Add these elements for error and status display -->
-<div id="paymentError" class="error-message" style="display: none;"></div>
-<div id="paymentStatusText" class="status-text"></div>
         
-    
+        <div class="payment-status">
+            <div class="spinner"></div>
+            <p id="statusMessage">Waiting for payment confirmation...</p>
+        </div>
+
+        <div id="paymentError" class="error-message" style="display: none;"></div>
+        <div id="paymentStatusText" class="status-text"></div>
         
         <div class="action-buttons">
             <button onclick="cancelPayment()" class="btn btn-secondary">Cancel</button>
@@ -53,7 +48,7 @@
 </div>
 
 <style>
-    .error-message {
+.error-message {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: var(--radius);
@@ -69,6 +64,7 @@
     margin-bottom: 1rem;
     font-weight: 600;
 }
+
 .payment-pending-container {
     max-width: 500px;
     margin: 2rem auto;
@@ -89,7 +85,7 @@
 
 .status-icon {
     font-size: 3rem;
-    color: var(--primary);
+    color: var(--secondary);
     margin-bottom: 1rem;
 }
 
@@ -130,8 +126,8 @@
 }
 
 .payment-instructions {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
     border-radius: var(--radius);
     padding: 1.5rem;
     margin-bottom: 2rem;
@@ -139,7 +135,7 @@
 }
 
 .payment-instructions h3 {
-    color: var(--primary);
+    color: var(--secondary);
     margin-bottom: 1rem;
 }
 
@@ -160,7 +156,7 @@
     width: 40px;
     height: 40px;
     border: 4px solid #2d3748;
-    border-top: 4px solid var(--primary);
+    border-top: 4px solid var(--secondary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 1rem;
@@ -193,12 +189,12 @@
 }
 
 .btn-primary {
-    background: var(--primary);
-    color: white;
+    background: var(--secondary);
+    color: var(--dark);
 }
 
 .btn-primary:hover {
-    background: var(--primary-dark);
+    background: #eab308;
 }
 
 .btn-secondary {
@@ -216,16 +212,15 @@
 const checkoutRequestID = document.getElementById('checkoutRequestID').textContent;
 const statusMessage = document.getElementById('statusMessage');
 
-console.log('Starting payment status check for:', checkoutRequestID);
+console.log('Starting advertisement payment status check for:', checkoutRequestID);
 
 // Start checking payment status immediately
 checkPaymentStatus(checkoutRequestID);
 
 async function checkPaymentStatus(checkoutID) {
-    const statusMessage = document.getElementById('statusMessage'); // Use existing element
-
     try {
-        const res = await fetch(`/unlock/check-status/${checkoutID}`);
+        // Use the advertisement payment status endpoint
+        const res = await fetch(`/advert/check-status/${checkoutID}`);
 
         if (!res.ok) {
             throw new Error(`Server returned ${res.status}`);
@@ -234,42 +229,42 @@ async function checkPaymentStatus(checkoutID) {
         const data = await res.json();
 
         if (data.status === "completed") {
-            statusMessage.innerHTML = "✅ <strong>Payment confirmed!</strong> Your product is now active.";
-            statusMessage.style.color = "#10b981"; // Green color for success
+            statusMessage.innerHTML = "✅ <strong>Advertisement payment confirmed!</strong> Your product is now featured.";
+            statusMessage.style.color = "#10b981";
             setTimeout(() => {
-                window.location.href = "/my-products";
+                window.location.href = "/products/my-products";
             }, 3000);
         } 
         else if (data.status === "pending") {
             statusMessage.innerHTML = "⏳ <strong>Still waiting for M-Pesa confirmation...</strong>";
-            statusMessage.style.color = "#f59e0b"; // Amber color for waiting
+            statusMessage.style.color = "#f59e0b";
             setTimeout(() => checkPaymentStatus(checkoutID), 2000);
         } 
         else if (data.status === "not_found") {
             statusMessage.innerHTML = "⚠️ <strong>Payment record not found.</strong> It may have been cancelled.";
-            statusMessage.style.color = "#ef4444"; // Red color for error
-            // Show cancel option
+            statusMessage.style.color = "#ef4444";
             setTimeout(() => {
-                window.location.href = "/create";
+                window.location.href = "/products/my-products";
             }, 5000);
         } 
         else {
             statusMessage.innerHTML = "❌ <strong>Payment failed or cancelled.</strong> Please try again.";
             statusMessage.style.color = "#ef4444";
             setTimeout(() => {
-                window.location.href = "/create";
+                window.location.href = "/products/my-products";
             }, 3000);
         }
 
     } catch (err) {
-        console.error("Payment check error:", err);
+        console.error("Advertisement payment check error:", err);
         statusMessage.innerHTML = "🚫 <strong>Network issue</strong> while checking payment. Please try again later.";
         statusMessage.style.color = "#ef4444";
         setTimeout(() => {
-            window.location.href = "/create";
+            window.location.href = "/products/my-products";
         }, 4000);
     }
 }
+
 function checkStatus() {
     // Manual status check
     const checkoutRequestID = document.getElementById('checkoutRequestID').textContent;
@@ -277,8 +272,8 @@ function checkStatus() {
 }
 
 function cancelPayment() {
-    if (confirm('Are you sure you want to cancel this payment?')) {
-        window.location.href = "/create";
+    if (confirm('Are you sure you want to cancel this advertisement payment?')) {
+        window.location.href = "/products/my-products";
     }
 }
 
@@ -290,4 +285,3 @@ document.addEventListener('visibilitychange', function() {
 });
 </script>
 {% endblock %}
-[file content end]

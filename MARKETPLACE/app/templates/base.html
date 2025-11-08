@@ -29,15 +29,16 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            background-color: #1f2937;
             color: #374151;
             line-height: 1.6;
+            padding-bottom: 60px; /* Space for bottom nav */
         }
 
         /* Navigation */
         .navbar {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            padding: 1rem 0;
+            padding: 0.75rem 0;
             box-shadow: var(--shadow);
             position: sticky;
             top: 0;
@@ -47,7 +48,7 @@
         .nav-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -56,20 +57,20 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             text-decoration: none;
         }
 
         .logo i {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
         }
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 0.75rem;
             align-items: center;
         }
 
@@ -77,12 +78,13 @@
             color: white;
             text-decoration: none;
             font-weight: 500;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.75rem;
             border-radius: var(--radius);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.85rem;
         }
 
         .nav-links a:hover {
@@ -91,7 +93,7 @@
         }
 
         .nav-links a i {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
         }
 
         .nav-links a.sell-btn {
@@ -106,38 +108,101 @@
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         }
 
+        /* ULTRA COMPACT Mobile Bottom Navigation - NOW VISIBLE */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            padding: 0.35rem 0.4rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex; /* Changed from none to flex */
+        }
+
+        .mobile-nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 0.1rem;
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--gray);
+            font-size: 0.6rem;
+            padding: 0.25rem 0.15rem;
+            flex: 1;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            min-width: 0;
+            max-width: 68px;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .mobile-nav-item i {
+            font-size: 1rem;
+            margin-bottom: 0.15rem;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        .mobile-nav-item span {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            line-height: 1.1;
+        }
+
         /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
             background: none;
             border: none;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             cursor: pointer;
+            padding: 0.25rem;
         }
 
         /* Main Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
-            min-height: calc(100vh - 140px);
+            padding: 1rem;
+            min-height: calc(100vh - 120px);
         }
 
         /* Flash Messages */
         .flash-messages {
-            margin: 1rem 0;
+            margin: 0.75rem 0;
         }
 
         .flash-message {
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1rem;
             border-radius: var(--radius);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
             box-shadow: var(--shadow);
             animation: slideIn 0.3s ease-out;
+            font-size: 0.9rem;
         }
 
         .flash-success {
@@ -153,35 +218,36 @@
         }
 
         .flash-message i {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         /* Footer */
         .footer {
             background: var(--dark);
             color: white;
-            padding: 3rem 0 2rem;
-            margin-top: 4rem;
+            padding: 2rem 0 1.5rem;
+            margin-top: 3rem;
         }
 
         .footer-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 1rem;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
         }
 
         .footer-section h3 {
             color: var(--secondary);
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
         }
 
         .footer-section p {
             color: #d1d5db;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
         }
 
         .footer-links {
@@ -189,13 +255,14 @@
         }
 
         .footer-links li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
 
         .footer-links a {
             color: #d1d5db;
             text-decoration: none;
             transition: color 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .footer-links a:hover {
@@ -204,21 +271,22 @@
 
         .social-links {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
         }
 
         .social-links a {
             color: white;
             background: var(--gray);
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             text-decoration: none;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .social-links a:hover {
@@ -228,17 +296,18 @@
 
         .footer-bottom {
             text-align: center;
-            margin-top: 3rem;
-            padding-top: 2rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
             border-top: 1px solid #374151;
             color: #9ca3af;
+            font-size: 0.85rem;
         }
 
         /* Animations */
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(-8px);
             }
             to {
                 opacity: 1;
@@ -246,22 +315,21 @@
             }
         }
 
-        /* Responsive Design */
+        /* Desktop Styles - Hide mobile nav on desktop */
+        @media (min-width: 769px) {
+            .mobile-bottom-nav {
+                display: none !important;
+            }
+            
+            body {
+                padding-bottom: 0;
+            }
+        }
+
+        /* Mobile Styles */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--primary-dark);
-                flex-direction: column;
-                padding: 1rem;
-                box-shadow: var(--shadow);
-            }
-
-            .nav-links.active {
-                display: flex;
             }
 
             .mobile-menu-btn {
@@ -269,23 +337,101 @@
             }
 
             .nav-container {
-                padding: 0 1rem;
+                padding: 0 0.75rem;
             }
 
             .container {
-                padding: 1rem;
+                padding: 0.75rem;
+                margin-bottom: 0;
             }
 
             .footer-content {
                 grid-template-columns: 1fr;
-                gap: 2rem;
+                gap: 1.5rem;
+            }
+
+            /* Show mobile nav on mobile */
+            .mobile-bottom-nav {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.1rem;
+            }
+            
+            .logo i {
+                font-size: 1.3rem;
+            }
+            
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .navbar {
+                padding: 0.6rem 0;
+            }
+            
+            .mobile-nav-item {
+                font-size: 0.55rem;
+                padding: 0.2rem 0.1rem;
+            }
+            
+            .mobile-nav-item i {
+                font-size: 0.9rem;
+            }
+            
+            .mobile-bottom-nav {
+                padding: 0.3rem 0.35rem;
+            }
+        }
+
+        /* Extra small mobile optimizations */
+        @media (max-width: 380px) {
+            .flash-message {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .footer {
+                padding: 1.5rem 0 1rem;
+            }
+            
+            .footer-section h3 {
+                font-size: 1rem;
+            }
+            
+            .mobile-nav-item {
+                max-width: 60px;
+            }
+        }
+
+        /* Ultra tiny screens */
+        @media (max-width: 320px) {
+            .mobile-nav-item {
+                font-size: 0.5rem;
+                padding: 0.15rem 0.05rem;
+            }
+            
+            .mobile-nav-item i {
+                font-size: 0.85rem;
+            }
+            
+            .mobile-bottom-nav {
+                padding: 0.25rem 0.3rem;
+            }
+            
+            .mobile-nav-item span {
+                line-height: 1;
             }
         }
 
         /* Utility Classes */
         .text-center { text-align: center; }
-        .mt-4 { margin-top: 2rem; }
-        .mb-4 { margin-bottom: 2rem; }
+        .mt-4 { margin-top: 1.5rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -308,18 +454,19 @@
                     <i class="fas fa-home"></i>Home
                 </a>
                 <a href="{{ url_for('products.all_products') }}">
-                    <i class="fas fa-shopping-bag"></i>All Products
+                    <i class="fas fa-shopping-bag"></i>Products
                 </a>
                 {% if current_user.is_authenticated %}
                     <a href="{{ url_for('products.create_product') }}" class="sell-btn">
-                        <i class="fas fa-plus"></i>Sell Item
+                        <i class="fas fa-plus"></i>Sell
                     </a>
-                     <a href="{{ url_for('products.my_products_list') }}">  <!-- UPDATE THIS LINE -->
-                        <i class="fas fa-box"></i>My Products
+                     <a href="{{ url_for('products.my_products_list') }}">
+                        <i class="fas fa-box"></i>My Items
                     </a>
                     <a href="{{ url_for('auth.logout') }}">
                         <i class="fas fa-sign-out-alt"></i>Logout
                     </a>
+                    
                 {% else %}
                     <a href="{{ url_for('auth.login') }}">
                         <i class="fas fa-sign-in-alt"></i>Login
@@ -329,6 +476,43 @@
                     </a>
                 {% endif %}
             </div>
+        </div>
+    </nav>
+
+    <!-- ULTRA COMPACT Mobile Bottom Navigation - NOW VISIBLE -->
+    <nav class="mobile-bottom-nav">
+        <div class="mobile-nav-container">
+            <a href="{{ url_for('main.index') }}" class="mobile-nav-item">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ url_for('products.all_products') }}" class="mobile-nav-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Products</span>
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="mobile-nav-item">
+                    <i class="fas fa-plus"></i>
+                    <span>Sell</span>
+                </a>
+                <a href="{{ url_for('products.my_products_list') }}" class="mobile-nav-item">
+                    <i class="fas fa-box"></i>
+                    <span>My Items</span>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="mobile-nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="mobile-nav-item">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </a>
+                <a href="{{ url_for('auth.register') }}" class="mobile-nav-item">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Register</span>
+                </a>
+            {% endif %}
         </div>
     </nav>
 
@@ -373,7 +557,8 @@
                     <li><a href="{{ url_for('products.all_products') }}">All Products</a></li>
                     {% if current_user.is_authenticated %}
                         <li><a href="{{ url_for('products.create_product') }}">Sell Item</a></li>
-                           <a href="{{ url_for('products.my_products_list') }}">My Products</a>                    {% else %}
+                        <li><a href="{{ url_for('products.my_products_list') }}">My Products</a></li>
+                    {% else %}
                         <li><a href="{{ url_for('auth.register') }}">Register</a></li>
                         <li><a href="{{ url_for('auth.login') }}">Login</a></li>
                     {% endif %}
@@ -405,9 +590,30 @@
             flashMessages.forEach(message => {
                 setTimeout(() => {
                     message.style.opacity = '0';
-                    message.style.transform = 'translateY(-10px)';
+                    message.style.transform = 'translateY(-8px)';
                     setTimeout(() => message.remove(), 300);
                 }, 5000);
+            });
+            
+            // Set active state for mobile bottom nav items
+            const currentPath = window.location.pathname;
+            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+            
+            mobileNavItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Add touch feedback for mobile nav
+            mobileNavItems.forEach(item => {
+                item.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                item.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
             });
         });
     </script>

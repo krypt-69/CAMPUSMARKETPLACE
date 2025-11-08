@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
 from flask_login import login_required, current_user
 import os
+from datetime import datetime
 import requests
 import base64
 from werkzeug.utils import secure_filename
-from app.models import Product, Category, Payment
+from app.models import Product, Category, Payment, ProductUnlock, User
 from app import db
 from app.mpesa import MpesaGateway
 import uuid  # We'll create this
@@ -75,11 +76,11 @@ def handle_mpesa_payment(request):
         image_filename = None
         if 'image' in request.files:
             file = request.files['image']
-            if file and file.filename != '' and allowed_file(file.filename):
-                ext = file.filename.rsplit('.', 1)[1].lower()
-                unique_filename = f"{uuid.uuid4().hex}.{ext}"
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename))
-                image_filename = unique_filename
+        if file and file.filename != '' and allowed_file(file.filename):
+            ext = file.filename.rsplit('.', 1)[1].lower()
+            unique_filename = f"{uuid.uuid4().hex}.{ext}"
+            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename))
+            image_filename = unique_filename
         
         # Create product first (but don't commit yet)
         new_product = Product(
@@ -276,16 +277,19 @@ def view_product(product_id):
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login', next=url_for('products.view_product', product_id=product_id)))
     
-    # Check if user has paid for viewing (you'll need to implement this logic)
-    has_paid = check_user_payment(current_user.id)
-    has_paid = True  # You'll need to implement this
+    # Check if user is the seller - they get free access
+    if product.seller_id == current_user.id:
+        return render_template('products/view_product.html', product=product)
     
-    if not has_paid:
-        # Redirect to payment page
-        return redirect(url_for('products.payment_required', product_id=product_id))
+    # Check if user has unlocked this product
+    has_unlocked = product.is_unlocked_by(current_user)
+    
+    if not has_unlocked:
+        # Redirect to unlock/payment page
+        flash('Please unlock this product to view seller details', 'info')
+        return redirect(url_for('products.unlock_product', product_id=product_id))
     
     return render_template('products/view_product.html', product=product)
-
 @products_bp.route('/payment-required/<int:product_id>')
 @login_required
 def payment_required(product_id):
@@ -370,42 +374,386 @@ def mark_sold(product_id):
     
     return jsonify({'success': True, 'message': 'Product marked as sold!'})
 
-# Add this to your products/routes.py for testing
-@products_bp.route('/test-mpesa')
-def test_mpesa():
-    from app.mpesa import MpesaGateway
-    
-    mpesa = MpesaGateway()
-    
-    # Test STK push with test phone number
-    test_phone = "254715982985"  # Sandbox test number
-    result, message = mpesa.stk_push(
-        phone_number=test_phone,
-        amount=1,  # 1 KES for testing
-        account_reference="TEST123",
-        description="Test payment"
-    )
-    
-    if result and result.get('ResponseCode') == '0':
-        return f"✅ SUCCESS: STK push initiated - {message}<br>CheckoutRequestID: {result.get('CheckoutRequestID')}"
-    else:
-        return f"❌ FAILED: {message}"
-@products_bp.route('/debug-token')
-def debug_token():
-    from app.mpesa import MpesaGateway
-    
-    mpesa = MpesaGateway()
-    token = mpesa.get_access_token()
-    
-    if token:
-        return f"✅ SUCCESS: Got access token - {token[:20]}..."
-    else:
-        return "❌ FAILED: No access token received"
 @products_bp.route("/payment-pending/<checkout_request_id>")
 @login_required
 def payment_pending(checkout_request_id):
     return render_template("products/payment_pending.html",
        checkout_request_id=checkout_request_id,
        product_title="Your product")
+##################################################################################################################
+@products_bp.route("/advpayment-pending/<checkout_request_id>")
+@login_required
+def advpayment_pending(checkout_request_id):
+    return render_template("products/advert_payment_pending.html",
+       checkout_request_id=checkout_request_id)
+@products_bp.route('/product/<int:product_id>/unlock', methods=['GET', 'POST'])
+@login_required
+def unlock_product(product_id):
+    """Initiate payment to unlock product contact details"""
+    product = Product.query.get_or_404(product_id)
+    
+    # Check if user already unlocked this product
+    existing_unlock = ProductUnlock.query.filter_by(
+        product_id=product_id,
+        user_id=current_user.id,
+        status='completed'
+    ).first()
+    
+    if existing_unlock:
+        flash('You have already unlocked this product!', 'info')
+        return redirect(url_for('products.view_product_contact', product_id=product_id))
+    
+    # Check if user is trying to unlock their own product
+    if product.seller_id == current_user.id:
+        flash('This is your own product! You can view the details.', 'info')
+        return redirect(url_for('products.view_product_contact', product_id=product_id))
+    
+    if request.method == 'POST':
+        return handle_unlock_payment(request, product)
+    
+    # GET request - show unlock payment page
+    unlock_fee = product.get_unlock_fee()
+    return render_template('products/unlock_product.html', 
+                         product=product, 
+                         unlock_fee=unlock_fee)
+
+def handle_unlock_payment(request, product):
+    """Handle the unlock payment process"""
+    try:
+        phone_number = request.form.get('mpesa_phone')
+        
+        # Validate phone number
+        if not phone_number:
+            flash('Please provide your M-Pesa phone number', 'error')
+            return redirect(url_for('products.unlock_product', product_id=product.id))
+        
+        # Format phone number (using simple version)
+        phone_number = format_phone_number_simple(phone_number)
+        print(f"Formatted phone number: {phone_number}")  # Debug
+        
+        # Validate the formatted number
+        if not phone_number or len(phone_number) != 12 or not phone_number.startswith('254'):
+            flash('Please enter a valid Kenyan phone number (e.g., 0712345678)', 'error')
+            return redirect(url_for('products.unlock_product', product_id=product.id))
+        
+        # Initialize M-Pesa gateway
+        mpesa = MpesaGateway()
+        
+        # Get unlock fee
+        unlock_fee = product.get_unlock_fee()
+        print(f"Unlock fee: {unlock_fee}")  # Debug
+        
+        # Initiate M-Pesa STK push
+        account_reference = f"UNLOCK{product.id}"
+        description = f"Unlock: {product.title}"
+        
+        print(f"Initiating STK push for {phone_number}, amount: {unlock_fee}")  # Debug
+        
+        result, message = mpesa.stk_push1(
+            phone_number=phone_number,
+            amount=unlock_fee,
+            account_reference=account_reference,
+            description=description
+        )
+        
+        print(f"STK push result: {result}")  # Debug
+        print(f"STK push message: {message}")  # Debug
+        
+        if result and result.get('ResponseCode') == '0':
+            # Payment initiated successfully
+            checkout_request_id = result.get('CheckoutRequestID')
+            merchant_request_id = result.get('MerchantRequestID')
+            
+            print(f"Payment initiated successfully. CheckoutRequestID: {checkout_request_id}")  # Debug
+            
+            # Create pending unlock record
+            unlock = ProductUnlock(
+                product_id=product.id,
+                user_id=current_user.id,
+                seller_id=product.seller_id,
+                amount=unlock_fee,
+                phone_number=phone_number,
+                checkout_request_id=checkout_request_id,
+                merchant_request_id=merchant_request_id,
+                status='pending'
+            )
+            
+            db.session.add(unlock)
+            db.session.commit()
+            
+            flash('M-Pesa payment initiated! Check your phone to complete payment.', 'success')
+            
+            return redirect(url_for('products.payment_pending', 
+                                  product_id=product.id,
+                                  checkout_request_id=checkout_request_id))
+            
+        else:
+            # Payment failed to initiate
+            error_message = result.get('errorMessage', 'Failed to initiate payment') if result else message
+            print(f"Payment failed: {error_message}")  # Debug
+            flash(f'Payment failed: {error_message}', 'error')
+            return redirect(url_for('products.unlock_product', product_id=product.id))
+            
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Unlock payment error: {str(e)}")
+        print(f"Exception in handle_unlock_payment: {str(e)}")  # Debug
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")  # Debug
+        flash('An error occurred during payment. Please try again.', 'error')
+        return redirect(url_for('products.unlock_product', product_id=product.id))
+
+@products_bp.route('/product/<int:product_id>/contact')
+@login_required
+def view_product_contact(product_id):
+    """View seller contact details after payment"""
+    product = Product.query.get_or_404(product_id)
+    seller = User.query.get(product.seller_id)
+    
+    # Check if user has unlocked this product or is the seller
+    has_access = False
+    
+    if product.seller_id == current_user.id:
+        has_access = True
+    else:
+        unlock = ProductUnlock.query.filter_by(
+            product_id=product_id,
+            user_id=current_user.id,
+            status='completed'
+        ).first()
+        has_access = unlock is not None
+    
+    if not has_access:
+        flash('Please unlock this product to view seller contact details', 'error')
+        return redirect(url_for('products.unlock_product', product_id=product_id))
+    
+    # Mark as accessed (update unlocked_at timestamp)
+    if product.seller_id != current_user.id:
+        unlock = ProductUnlock.query.filter_by(
+            product_id=product_id,
+            user_id=current_user.id,
+            status='completed'
+        ).first()
+        if unlock and not unlock.unlocked_at:
+            unlock.unlocked_at = datetime.utcnow()
+            db.session.commit()
+    
+    return render_template('products/product_contact.html', 
+                         product=product, 
+                         seller=seller)
+
+@products_bp.route('/unlock/check-status/<checkout_request_id>')
+@login_required
+def check_unlock_status(checkout_request_id):
+    """Check payment status for product unlock"""
+    try:
+        unlock = ProductUnlock.query.filter_by(
+            checkout_request_id=checkout_request_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not unlock:
+            return jsonify({'error': 'Payment record not found'}), 404
+            
+        return jsonify({
+            'status': unlock.status,
+            'product_id': unlock.product_id,
+            'mpesa_receipt': unlock.mpesa_receipt_number
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error checking unlock status: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+# M-Pesa Callback URL for unlock payments
+@products_bp.route('/unlock/callback', methods=['POST'])
+def unlock_payment_callback():
+    """Handle M-Pesa callback for unlock payments"""
+    try:
+        callback_data = request.get_json()
+        
+        if not callback_data:
+            current_app.logger.error("Empty unlock callback data received")
+            return jsonify({"ResultCode": 1, "ResultDesc": "Rejected"})
+        
+        # Log the callback for debugging
+        current_app.logger.info(f"Unlock callback received: {callback_data}")
+        
+        # Extract callback metadata
+        callback_metadata = callback_data.get('Body', {}).get('stkCallback', {})
+        checkout_request_id = callback_metadata.get('CheckoutRequestID')
+        result_code = callback_metadata.get('ResultCode')
+        
+        if not checkout_request_id:
+            current_app.logger.error("No CheckoutRequestID in unlock callback")
+            return jsonify({"ResultCode": 1, "ResultDesc": "Rejected"})
+        
+        # Find the unlock record
+        unlock = ProductUnlock.query.filter_by(
+            checkout_request_id=checkout_request_id
+        ).first()
+        
+        if not unlock:
+            current_app.logger.error(f"Unlock not found for CheckoutRequestID: {checkout_request_id}")
+            return jsonify({"ResultCode": 1, "ResultDesc": "Rejected"})
+        
+        if result_code == 0:
+            # Payment successful
+            callback_metadata = callback_metadata.get('CallbackMetadata', {}).get('Item', [])
+            
+            # Extract payment details
+            mpesa_receipt_number = None
+            amount = None
+            phone_number = None
+            
+            for item in callback_metadata:
+                if item.get('Name') == 'MpesaReceiptNumber':
+                    mpesa_receipt_number = item.get('Value')
+                elif item.get('Name') == 'Amount':
+                    amount = item.get('Value')
+                elif item.get('Name') == 'PhoneNumber':
+                    phone_number = item.get('Value')
+            
+            # Update unlock record
+            unlock.status = 'completed'
+            unlock.mpesa_receipt_number = mpesa_receipt_number
+            unlock.completed_at = datetime.utcnow()
+            unlock.transaction_date = datetime.utcnow()
+            
+            db.session.commit()
+            
+            current_app.logger.info(f"Product unlock completed for product {unlock.product_id}")
+            return jsonify({"ResultCode": 0, "ResultDesc": "Success"})
+            
+        else:
+            # Payment failed
+            unlock.status = 'failed'
+            db.session.commit()
+            
+            error_message = callback_metadata.get('ResultDesc', 'Payment failed')
+            current_app.logger.error(f"Unlock payment failed: {error_message}")
+            return jsonify({"ResultCode": 0, "ResultDesc": "Success"})  # Always return success to M-Pesa
+            
+    except Exception as e:
+        current_app.logger.error(f"Unlock callback processing error: {str(e)}")
+        return jsonify({"ResultCode": 1, "ResultDesc": "Rejected"})    
 
 
+def format_phone_number(phone_number):
+    """Format phone number to M-Pesa format (254...)"""
+    if not phone_number:
+        return None
+    
+    # Remove any non-digit characters except +
+    phone_number = ''.join(filter(str.isdigit, phone_number))
+    
+    # Handle different formats
+    if phone_number.startswith('0'):
+        # Convert 07... to 2547...
+        phone_number = '254' + phone_number[1:]
+    elif phone_number.startswith('7'):
+        # Convert 7... to 2547...
+        phone_number = '254' + phone_number
+    elif phone_number.startswith('254'):
+        # Already in correct format
+        pass
+    else:
+        # Assume it's already in international format
+        pass
+    
+    # Ensure it's exactly 12 digits (254XXXXXXXXX)
+    if len(phone_number) == 12 and phone_number.startswith('254'):
+        return phone_number
+    else:
+        raise ValueError(f"Invalid phone number format: {phone_number}")
+
+# Alternative simpler version if you prefer:
+def format_phone_number_simple(phone_number):
+    """Simple phone number formatter"""
+    if not phone_number:
+        return None
+    
+    # Remove all non-digit characters
+    phone_number = ''.join(filter(str.isdigit, phone_number))
+    
+    # Convert to 254 format
+    if phone_number.startswith('0'):
+        return '254' + phone_number[1:]
+    elif phone_number.startswith('7') and len(phone_number) == 9:
+        return '254' + phone_number
+    elif phone_number.startswith('254'):
+        return phone_number
+    else:
+        # Return as is and let M-Pesa handle validation
+        return phone_number
+@products_bp.route('/product/<int:product_id>/contact-details', methods=['GET', 'POST'])
+@login_required
+def edit_contact_details(product_id):
+    """Edit seller contact details for a specific product"""
+    product = Product.query.get_or_404(product_id)
+    
+    # Check if user owns the product
+    if product.seller_id != current_user.id:
+        flash('You can only edit contact details for your own products', 'error')
+        return redirect(url_for('products.view_product', product_id=product_id))
+    
+    if request.method == 'POST':
+        # Update user's contact details
+        current_user.phone_number = request.form.get('phone_number')
+        current_user.whatsapp_number = request.form.get('whatsapp_number')
+        current_user.email = request.form.get('email')
+        current_user.campus_location = request.form.get('campus_location')
+        current_user.hostel_name = request.form.get('hostel_name')
+        current_user.hostel_room = request.form.get('hostel_room')
+        current_user.contact_preference = request.form.get('contact_preference')
+        
+        db.session.commit()
+        
+        flash('Contact details updated successfully!', 'success')
+        return redirect(url_for('products.view_product', product_id=product_id))
+    
+    return render_template('products/edit_contact_details.html', product=product)
+
+@products_bp.route('/product/<int:product_id>/buyer-contact')
+@login_required
+def view_buyer_contact(product_id):
+    """View seller contact details after payment (for buyers)"""
+    try:
+        product = Product.query.get_or_404(product_id)
+        
+        # Check if user has unlocked this product or is the seller
+        if product.seller_id == current_user.id:
+            # Seller viewing their own product
+            return render_template('products/buyer_contact.html', 
+                                 product=product, 
+                                 seller=current_user)
+        
+        # Check if buyer has unlocked this product
+        unlock = ProductUnlock.query.filter_by(
+            product_id=product_id,
+            user_id=current_user.id,
+            status='completed'
+        ).first()
+        
+        if not unlock:
+            flash('Please unlock this product to view seller contact details', 'error')
+            return redirect(url_for('products.unlock_product', product_id=product_id))
+        
+        # Mark as accessed
+        if not unlock.unlocked_at:
+            unlock.unlocked_at = datetime.utcnow()
+            db.session.commit()
+        
+        # Get the seller - FIX: Make sure User model is imported
+        seller = User.query.get(product.seller_id)
+        if not seller:
+            flash('Seller information not found', 'error')
+            return redirect(url_for('products.view_product', product_id=product_id))
+        
+        return render_template('products/buyer_contact.html', 
+                             product=product, 
+                             seller=seller)
+                             
+    except Exception as e:
+        current_app.logger.error(f"Error in view_buyer_contact: {str(e)}")
+        flash('Error loading contact details', 'error')
+        return redirect(url_for('products.view_product', product_id=product_id))

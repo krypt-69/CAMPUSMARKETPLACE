@@ -135,6 +135,78 @@ class MpesaGateway:
         except Exception as e:
             print(f"DEBUG: STK General Error: {str(e)}")
             return None, str(e)
+    def stk_push1(self, phone_number, amount, account_reference, description):
+        """Initiate STK push for payment"""
+        try:
+            access_token = self.get_access_token()
+            if not access_token:
+                return None, "Failed to get access token"
+            
+            # Get config directly in this method
+            business_shortcode = current_app.config.get('MPESA_SHORTCODE')
+            passkey = current_app.config.get('MPESA_PASSKEY')
+            base_url = current_app.config.get('MPESA_BASE_URL', 'https://sandbox.safaricom.co.ke')
+            callback_url = current_app.config.get('BASE_URL', 'http://localhost:5000')
+            
+            print(f"DEBUG: Shortcode: {business_shortcode}")
+            print(f"DEBUG: Passkey: {passkey}")
+            
+            if not business_shortcode or not passkey:
+                return None, "M-Pesa configuration missing"
+            
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            
+            # Generate password - EXACTLY like the working example
+            password_string = f"{business_shortcode}{passkey}{timestamp}"
+            password = base64.b64encode(password_string.encode()).decode()
+            
+            # STK push payload - EXACT format from working example
+            payload = {
+                "BusinessShortCode": int(business_shortcode),  # Convert to int like example
+                "Password": password,
+                "Timestamp": timestamp,
+                "TransactionType": "CustomerPayBillOnline",
+                "Amount": int(amount),
+                "PartyA": int(phone_number),  # Convert to int like example
+                "PartyB": int(business_shortcode),  # Convert to int like example
+                "PhoneNumber": int(phone_number),  # Convert to int like example
+                "CallBackURL": "https://hedgy-marvella-nonsubsiding.ngrok-free.dev/unlock/callback",
+                "AccountReference": account_reference,
+                "TransactionDesc": description
+            }
+            
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Use the exact URL from working example
+            url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+            print(f"DEBUG: STK Push URL: {url}")
+            print(f"DEBUG: STK Payload: {json.dumps(payload, indent=2)}")
+            print(f"DEBUG: Headers: {headers}")
+            
+            # Send request EXACTLY like the working example
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            print(f"DEBUG: STK Response Status: {response.status_code}")
+            print(f"DEBUG: STK Response Text: {response.text}")
+            
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            if result.get('ResponseCode') == '0':
+                return result, "STK push initiated successfully"
+            else:
+                error_message = result.get('errorMessage', 'Unknown error')
+                return result, f"STK push failed: {error_message}"
+            
+        except requests.exceptions.RequestException as e:
+            print(f"DEBUG: STK Request Error: {str(e)}")
+            return None, f"Network error: {str(e)}"
+        except Exception as e:
+            print(f"DEBUG: STK General Error: {str(e)}")
+            return None, str(e)
     
     def check_transaction_status(self, checkout_request_id):
         """Check transaction status"""

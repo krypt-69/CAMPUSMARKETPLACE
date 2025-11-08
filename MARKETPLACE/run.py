@@ -6,9 +6,10 @@ app = create_app()
 if __name__ == '__main__':
     with app.app_context():
         try:
-            
+            #db.drop_all()
+            #db.create_all()
             # Drop all tables and recreate (for development only)
-            print("Database tables  not created!")
+            #print("Database tables  not created!")
             
             # Add sample categories
             from app.models import Category
@@ -30,4 +31,4 @@ if __name__ == '__main__':
             print(f"Error: {e}")
             db.session.rollback()
     
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

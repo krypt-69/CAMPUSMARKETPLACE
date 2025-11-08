@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="unlock-container">
+    <div class="unlock-header">
+        <h1>
+            <i class="fas fa-lock"></i>
+            Unlock Seller Details
+        </h1>
+        <p>Pay a small fee to get the seller's contact information</p>
+    </div>
+    
+    <div class="product-card">
+        <div class="product-image">
+            {% if product.image %}
+                <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
+            {% else %}
+                <div class="product-image-placeholder">
+                    <i class="fas fa-camera"></i>
+                    <span>No Image</span>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="product-info">
+            <h3>{{ product.title }}</h3>
+            <div class="product-price">KES {{ "{:,.2f}".format(product.price) }}</div>
+            <div class="product-condition">{{ product.condition|title }}</div>
+            <p class="product-description">{{ product.description }}</p>
+            
+            <div class="seller-info">
+                <i class="fas fa-user"></i>
+                <span>Sold by: @{{ product.seller.username }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="unlock-details">
+        <div class="unlock-fee">
+            <h3>Unlock Fee: KES {{ "%.2f"|format(unlock_fee) }}</h3>
+            <p>This one-time payment gives you permanent access to the seller's contact details for this product.</p>
+        </div>
+        
+        <form id="unlockForm" method="POST" class="unlock-form">
+            <div class="form-group">
+                <label for="mpesa_phone">
+                    <i class="fas fa-mobile-alt"></i>
+                    M-Pesa Phone Number
+                </label>
+                <input type="tel" 
+                       id="mpesa_phone" 
+                       name="mpesa_phone" 
+                       placeholder="e.g., 0712345678" 
+                       required
+                       pattern="[0-9]{10,12}" 
+                       title="Enter a valid Kenyan phone number">
+                <small class="form-text">You will receive an M-Pesa prompt on this number</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-unlock">
+                <i class="fas fa-lock-open"></i>
+                Pay KES {{ "%.2f"|format(unlock_fee) }} to Unlock
+            </button>
+        </form>
+        
+        <div class="unlock-benefits">
+            <h4>What you get:</h4>
+            <ul>
+                <li><i class="fas fa-check"></i> Seller's phone number</li>
+                <li><i class="fas fa-check"></i> WhatsApp contact (if available)</li>
+                <li><i class="fas fa-check"></i> Email address</li>
+                <li><i class="fas fa-check"></i> Campus location</li>
+                <li><i class="fas fa-check"></i> Hostel information</li>
+                <li><i class="fas fa-check"></i> Permanent access to these details</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.unlock-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.unlock-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.unlock-header h1 {
+    font-size: 2rem;
+    color: #e5e7eb;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.unlock-header h1 i {
+    color: var(--primary);
+}
+
+.unlock-header p {
+    color: #9ca3af;
+    font-size: 1.1rem;
+}
+
+.product-card {
+    background: #0a0f1c;
+    border: 1px solid #2d3748;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.product-image {
+    width: 150px;
+    height: 150px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #1f2937;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+}
+
+.product-image-placeholder i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-info h3 {
+    color: #e5e7eb;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.product-condition {
+    display: inline-block;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.product-description {
+    color: #9ca3af;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.seller-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+.seller-info i {
+    color: var(--primary);
+}
+
+.unlock-details {
+    background: #0a0f1c;
+    border: 1px solid #2d3748;
+    border-radius: var(--radius);
+    padding: 2rem;
+}
+
+.unlock-fee {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #2d3748;
+}
+
+.unlock-fee h3 {
+    color: var(--primary);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.unlock-fee p {
+    color: #9ca3af;
+    margin: 0;
+}
+
+.unlock-form {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #e5e7eb;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-group label i {
+    color: var(--primary);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #111827;
+    border: 2px solid #2d3748;
+    border-radius: var(--radius);
+    color: #e5e7eb;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.25rem;
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
+.btn-unlock {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-unlock:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.unlock-benefits {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.unlock-benefits h4 {
+    color: #10b981;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.unlock-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.unlock-benefits li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    color: #e5e7eb;
+}
+
+.unlock-benefits li i {
+    color: #10b981;
+    width: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .unlock-container {
+        padding: 0 0.75rem;
+    }
+    
+    .product-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .product-image {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto;
+    }
+    
+    .unlock-header h1 {
+        font-size: 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .unlock-details {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .unlock-container {
+        padding: 0 0.5rem;
+    }
+    
+    .unlock-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .product-card {
+        padding: 1rem;
+    }
+    
+    .unlock-details {
+        padding: 1rem;
+    }
+    
+    .btn-unlock {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+    }
+}
+</style>
+
+<script>
+document.getElementById('unlockForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Basic phone number validation
+    const phoneInput = document.getElementById('mpesa_phone');
+    const phoneNumber = phoneInput.value.trim();
+    
+    // Validate Kenyan phone number format
+    const phoneRegex = /^(07\d{8}|7\d{8}|\+2547\d{8}|2547\d{8})$/;
+    if (!phoneRegex.test(phoneNumber)) {
+        alert('Please enter a valid Kenyan phone number (e.g., 0712345678)');
+        phoneInput.focus();
+        return;
+    }
+    
+    // Disable button and show loading state
+    const submitBtn = document.querySelector('.btn-unlock');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    submitBtn.disabled = true;
+    
+    // Submit the form
+    this.submit();
+});
+</script>
+{% endblock %}
