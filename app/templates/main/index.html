@@ -1,0 +1,708 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">CampusMarket</h1>
+        <p class="hero-subtitle">Buy & Sell on Campus</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('products.all_products') }}" class="btn btn-primary">
+                <i class="fas fa-shopping-bag"></i>Shop
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="btn btn-secondary">
+                    <i class="fas fa-plus"></i>Sell
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i>Join
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="hero-animation">
+        <div class="floating-icons">
+            <i class="fas fa-laptop"></i>
+            <i class="fas fa-book"></i>
+            <i class="fas fa-couch"></i>
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats -->
+<div class="quick-stats">
+    <div class="stat">
+        <strong>50+</strong>
+        <span>Students</span>
+    </div>
+    <div class="stat">
+        <strong>10+</strong>
+        <span>Sold</span>
+    </div>
+    <div class="stat">
+        <strong>98%</strong>
+        <span>Rating</span>
+    </div>
+</div>
+
+<!-- Fast Moving Items -->
+<section class="compact-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-bolt"></i>
+            Hot Deals
+        </h2>
+        <a href="{{ url_for('products.all_products') }}" class="view-all">View All</a>
+    </div>
+
+    {% if fast_moving %}
+        <div class="compact-grid">
+            {% for product in fast_moving %}
+                <div class="compact-card" onclick="window.location='{{ url_for('products.view_product', product_id=product.id) }}'">
+                    <div class="card-badge">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="card-image">
+                        {% if product.image %}
+                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
+                        {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ product.title|truncate(20) }}</h3>
+                        <p class="card-price">KES {{ "{:,.0f}".format(product.price) }}</p>
+                        <div class="card-meta">
+                            <span class="meta-tag">{{ product.condition|title|truncate(8) }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-compact">
+            <i class="fas fa-box-open"></i>
+            <p>No hot deals yet</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="btn-small">
+                    <i class="fas fa-plus"></i>List Item
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- Latest Items -->
+<section class="compact-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-boxes"></i>
+            Latest
+        </h2>
+        <a href="{{ url_for('products.all_products') }}" class="view-all">View All</a>
+    </div>
+
+    {% if all_products %}
+        <div class="compact-grid">
+            {% for product in all_products %}
+                <div class="compact-card" onclick="window.location='{{ url_for('products.view_product', product_id=product.id) }}'">
+                    <div class="card-image">
+                        {% if product.image %}
+                            <img src="{{ url_for('static', filename='uploads/product_images/' + product.image) }}" alt="{{ product.title }}">
+                        {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ product.title|truncate(20) }}</h3>
+                        <p class="card-price">KES {{ "{:,.0f}".format(product.price) }}</p>
+                        <div class="card-meta">
+                            <span class="meta-tag">{{ product.condition|title|truncate(8) }}</span>
+                            <span class="meta-category">{{ product.category.name|truncate(8) if product.category else 'General' }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-compact">
+            <i class="fas fa-box-open"></i>
+            <p>No items yet</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('products.create_product') }}" class="btn-small">
+                    <i class="fas fa-plus"></i>List Item
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn-small">
+                    <i class="fas fa-user-plus"></i>Join Now
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- Quick Features -->
+<div class="quick-features">
+    <div class="feature">
+        <i class="fas fa-shield-alt"></i>
+        <span>Secure</span>
+    </div>
+    <div class="feature">
+        <i class="fas fa-rocket"></i>
+        <span>Fast</span>
+    </div>
+    <div class="feature">
+        <i class="fas fa-users"></i>
+        <span>Trusted</span>
+    </div>
+    <div class="feature">
+        <i class="fas fa-tags"></i>
+        <span>Cheap</span>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary: #f59e0b;
+    --dark: #111827;
+    --darker: #0f1420;
+    --light: #1f2937;
+    --lighter: #374151;
+    --gray: #9ca3af;
+    --gray-light: #4b5563;
+    --success: #10b981;
+    --error: #ef4444;
+    --radius: 12px;
+    --radius-sm: 8px;
+}
+
+/* Hero Section - Ultra Compact */
+.hero {
+    background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-bottom: 1rem;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+}
+
+.btn-secondary:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Floating Icons Animation */
+.hero-animation {
+    margin-top: 1rem;
+    height: 60px;
+    position: relative;
+}
+
+.floating-icons {
+    position: relative;
+    height: 100%;
+}
+
+.floating-icons i {
+    position: absolute;
+    font-size: 1.2rem;
+    color: var(--primary);
+    opacity: 0.7;
+    animation: floatBounce 3s ease-in-out infinite;
+}
+
+.floating-icons i:nth-child(1) { left: 10%; animation-delay: 0s; }
+.floating-icons i:nth-child(2) { left: 30%; animation-delay: 0.5s; }
+.floating-icons i:nth-child(3) { left: 50%; animation-delay: 1s; }
+.floating-icons i:nth-child(4) { left: 70%; animation-delay: 1.5s; }
+
+@keyframes floatBounce {
+    0%, 100% { 
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
+    }
+    25% { 
+        transform: translateY(-15px) scale(1.1);
+        opacity: 1;
+    }
+    50% { 
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
+    }
+    75% { 
+        transform: translateY(-8px) scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.stat {
+    background: var(--light);
+    padding: 0.75rem 0.5rem;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    border: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+}
+
+.stat:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.stat strong {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.2rem;
+}
+
+.stat span {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+/* Compact Sections */
+.compact-section {
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    color: var(--secondary);
+}
+
+.view-all {
+    font-size: 0.75rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.view-all:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Ultra Compact Grid - 3 columns by default */
+.compact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+/* Ultra Compact Cards */
+.compact-card {
+    background: var(--light);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    animation: cardSlideIn 0.5s ease-out;
+}
+
+.compact-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-badge {
+    position: absolute;
+    top: 0.3rem;
+    left: 0.3rem;
+    background: var(--secondary);
+    color: var(--dark);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    z-index: 2;
+}
+
+.card-image {
+    height: 80px;
+    background: var(--lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.compact-card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+.image-placeholder {
+    color: var(--gray);
+    font-size: 1.2rem;
+}
+
+.card-content {
+    padding: 0.6rem;
+}
+
+.card-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.card-price {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.4rem;
+}
+
+.card-meta {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.meta-tag, .meta-category {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+    background: var(--lighter);
+    color: var(--gray);
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.meta-tag {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+/* Empty State */
+.empty-compact {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: var(--light);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-light);
+}
+
+.empty-compact i {
+    font-size: 2rem;
+    color: var(--gray-light);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.empty-compact p {
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.btn-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+/* Quick Features */
+.quick-features {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin: 2rem 0.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--gray-light);
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.feature {
+    text-align: center;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.feature:hover {
+    transform: translateY(-2px);
+}
+
+.feature i {
+    font-size: 1.2rem;
+    color: var(--primary);
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+.feature span {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+/* Responsive Design - Even More Compact */
+@media (max-width: 480px) {
+    .hero {
+        padding: 1rem 0.75rem;
+    }
+    
+    .hero-title {
+        font-size: 1.3rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 0.8rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .compact-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+    }
+    
+    .card-image {
+        height: 70px;
+    }
+    
+    .card-content {
+        padding: 0.5rem;
+    }
+    
+    .card-title {
+        font-size: 0.7rem;
+    }
+    
+    .card-price {
+        font-size: 0.8rem;
+    }
+    
+    .quick-stats,
+    .quick-features {
+        gap: 0.4rem;
+    }
+    
+    .stat,
+    .feature {
+        padding: 0.6rem 0.4rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .compact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 120px;
+        justify-content: center;
+    }
+    
+    .quick-features {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+}
+
+/* 4 columns on larger phones */
+@media (min-width: 481px) and (max-width: 768px) {
+    .compact-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* 5 columns on tablets */
+@media (min-width: 769px) {
+    .compact-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* Staggered animation for cards */
+.compact-card:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.compact-card:nth-child(even) {
+    animation-delay: 0.2s;
+}
+
+/* Loading animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.compact-card.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading animation
+    const cards = document.querySelectorAll('.compact-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.05}s`;
+    });
+    
+    // Add touch feedback
+    cards.forEach(card => {
+        card.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        card.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+    });
+    
+    // Parallax effect for hero
+    const hero = document.querySelector('.hero');
+    window.addEventListener('scroll', function() {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
+        hero.style.transform = `translateY(${rate}px)`;
+    });
+});
+</script>
+{% endblock %}

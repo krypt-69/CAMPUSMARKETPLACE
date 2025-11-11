@@ -1,0 +1,1856 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="create-product-container">
+    <div class="create-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-plus-circle"></i>
+                Sell Your Item
+            </h1>
+            <p class="page-subtitle">List your item and reach thousands of campus buyers</p>
+        </div>
+    </div>
+
+    <div class="create-wizard">
+        <!-- Compact wizard steps - all in one row -->
+        <div class="wizard-steps compact">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-info">
+                    <div class="step-title">Product Details</div>
+                    <div class="step-desc">Basic info</div>
+                </div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-info">
+                    <div class="step-title">Pricing & Delivery</div>
+                    <div class="step-desc">Set price & shipping</div>
+                </div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-info">
+                    <div class="step-title">Payment & Review</div>
+                    <div class="step-desc">Pay & publish</div>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="product-form" id="productForm">
+            <!-- Step 1: Product Details -->
+            <div class="form-step active" data-step="1">
+                <div class="step-content">
+                    <h3 class="step-title">Product Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="title" class="form-label">
+                            <i class="fas fa-heading"></i>
+                            Product Title *
+                        </label>
+                        <input 
+                            type="text" 
+                            id="title"
+                            name="title" 
+                            class="form-input" 
+                            placeholder="e.g., MacBook Pro 2020, Calculus Textbook, Office Chair"
+                            required
+                            maxlength="100"
+                        >
+                        <div class="form-hint">Be descriptive but concise (max 100 characters)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category_id" class="form-label">
+                            <i class="fas fa-layer-group"></i>
+                            Category *
+                        </label>
+                        <select id="category_id" name="category_id" class="form-select" required>
+                            <option value="">Select a category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="condition" class="form-label">
+                            <i class="fas fa-tag"></i>
+                            Condition *
+                        </label>
+                        <select id="condition" name="condition" class="form-select" required>
+                            <option value="">Select condition</option>
+                            <option value="new">Brand New</option>
+                            <option value="like_new">Like New</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="needs_repair">Needs Repair</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-camera"></i>
+                            Product Images *
+                        </label>
+                        <div class="image-upload-container">
+                            <div class="upload-area" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h4>Upload Product Images</h4>
+                                <p>Drag & drop images or click to browse</p>
+                                <span class="upload-hint">Recommended: 3-5 clear images (Max 5MB each)</span>
+                                <input type="file" id="image" name="image" accept="image/*" class="file-input" required>
+                            </div>
+                            <div class="image-preview" id="imagePreview">
+                                <!-- Preview will be added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left"></i>
+                            Description *
+                        </label>
+                        <textarea 
+                            id="description"
+                            name="description" 
+                            class="form-textarea" 
+                            placeholder="Describe your item in detail. Include specifications, features, any flaws, and why you're selling it..."
+                            rows="5"
+                            required
+                            maxlength="1000"
+                        ></textarea>
+                        <div class="form-hint">
+                            <span id="charCount">0</span>/1000 characters
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-next" data-next="2">
+                        Next: Pricing & Delivery
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Pricing & Delivery -->
+            <div class="form-step" data-step="2">
+                <div class="step-content">
+                    <h3 class="step-title">Pricing & Delivery Options</h3>
+                    
+                    <div class="form-group">
+                        <label for="price" class="form-label">
+                            <i class="fas fa-tag"></i>
+                            Price (KES) *
+                        </label>
+                        <div class="price-input-container">
+                            <span class="currency-symbol">KES</span>
+                            <input 
+                                type="number" 
+                                id="price"
+                                name="price" 
+                                class="form-input price-input" 
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                                required
+                            >
+                        </div>
+                        <div class="form-hint">Set a fair price for your item</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-percentage"></i>
+                            Campus Token Discount
+                        </label>
+                        <div class="discount-options">
+                            <label class="radio-container">
+                                <input type="radio" name="token_discount" value="none" checked>
+                                <span class="radio-checkmark"></span>
+                                No discount
+                            </label>
+                            <label class="radio-container">
+                                <input type="radio" name="token_discount" value="5">
+                                <span class="radio-checkmark"></span>
+                                5% discount for token holders
+                            </label>
+                            <label class="radio-container">
+                                <input type="radio" name="token_discount" value="10">
+                                <span class="radio-checkmark"></span>
+                                10% discount for token holders
+                            </label>
+                            <label class="radio-container">
+                                <input type="radio" name="token_discount" value="15">
+                                <span class="radio-checkmark"></span>
+                                15% discount for token holders
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-truck"></i>
+                            Delivery Options *
+                        </label>
+                        <div class="delivery-options">
+                            <label class="radio-container">
+                                <input type="radio" name="delivery_option" value="free" required>
+                                <span class="radio-checkmark"></span>
+                                <div class="option-content">
+                                    <div class="option-title">Free Delivery</div>
+                                    <div class="option-desc">I offer free delivery within campus</div>
+                                    <div class="option-fields" id="freeDeliveryFields">
+                                        <input type="text" name="delivery_address" placeholder="Your wallet address or M-Pesa number" class="form-input">
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="radio-container">
+                                <input type="radio" name="delivery_option" value="meetup" required>
+                                <span class="radio-checkmark"></span>
+                                <div class="option-content">
+                                    <div class="option-title">Campus Meetup</div>
+                                    <div class="option-desc">Buyer and seller arrange meetup location</div>
+                                    <div class="option-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        We'll connect you with buyers to arrange meetup details
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="radio-container">
+                                <input type="radio" name="delivery_option" value="paid" required>
+                                <span class="radio-checkmark"></span>
+                                <div class="option-content">
+                                    <div class="option-title">Paid Delivery</div>
+                                    <div class="option-desc">Delivery available for extra fee</div>
+                                    <div class="option-fields" id="paidDeliveryFields">
+                                        <input type="number" name="delivery_fee" placeholder="Delivery fee in KES" class="form-input" min="0">
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="is_fast_moving">
+                            <span class="checkmark"></span>
+                            <div class="checkbox-content">
+                                <div class="checkbox-title">Mark as Fast Moving</div>
+                                <div class="checkbox-desc">Feature this item on the homepage for better visibility</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-prev" data-prev="1">
+                        <i class="fas fa-arrow-left"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-next" data-next="3">
+                        Next: Review & Pay
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Payment & Review -->
+            <div class="form-step" data-step="3">
+                <div class="step-content">
+                    <h3 class="step-title">Review & Payment</h3>
+                    
+                    <div class="review-summary">
+                        <div class="review-section">
+                            <h4>Product Details</h4>
+                            <div class="review-item">
+                                <span class="review-label">Title:</span>
+                                <span id="review-title" class="review-value">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Category:</span>
+                                <span id="review-category" class="review-value">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Condition:</span>
+                                <span id="review-condition" class="review-value">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Description:</span>
+                                <span id="review-description" class="review-value">-</span>
+                            </div>
+                        </div>
+
+                        <div class="review-section">
+                            <h4>Pricing & Delivery</h4>
+                            <div class="review-item">
+                                <span class="review-label">Price:</span>
+                                <span id="review-price" class="review-value">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Token Discount:</span>
+                                <span id="review-discount" class="review-value">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Delivery:</span>
+                                <span id="review-delivery" class="review-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-section">
+                        <div class="payment-info">
+                            <div class="payment-header">
+                                <i class="fas fa-shield-alt"></i>
+                                <h4>Listing Fee: KES 50</h4>
+                            </div>
+                            <p class="payment-desc">
+                                Pay a small fee to list your item. This helps maintain the quality of our marketplace and ensures serious sellers.
+                            </p>
+                            
+                            <div class="payment-options">
+                                <label class="radio-container">
+                                    <input type="radio" name="payment_method" value="mpesa" required>
+                                    <span class="radio-checkmark"></span>
+                                    <div class="option-content">
+                                        <div class="option-title">
+                                            <i class="fas fa-mobile-alt"></i>
+                                            M-Pesa
+                                        </div>
+                                        <div class="option-desc">Pay instantly via M-Pesa</div>
+                                        <div class="option-fields" id="mpesaFields">
+                                            <div class="form-group">
+                                                <label for="mpesa_phone" class="form-label">
+                                                    <i class="fas fa-phone"></i>
+                                                    M-Pesa Phone Number *
+                                                </label>
+                                                <input 
+                                                    type="tel" 
+                                                    id="mpesa_phone"
+                                                    name="mpesa_phone" 
+                                                    class="form-input" 
+                                                    placeholder="e.g., 0712345678"
+                                                    pattern="[0-9]{10,12}"
+                                                    value=""
+                                                >
+                                                <div class="form-hint">Enter your M-Pesa registered phone number</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="radio-container">
+                                    <input type="radio" name="payment_method" value="token" required>
+                                    <span class="radio-checkmark"></span>
+                                    <div class="option-content">
+                                        <div class="option-title">
+                                            <i class="fas fa-coins"></i>
+                                            Campus Token
+                                        </div>
+                                        <div class="option-desc">Pay with your campus tokens</div>
+                                        <div class="option-fields" id="tokenFields">
+                                            <div class="form-group">
+                                                <label for="token_address" class="form-label">
+                                                    <i class="fas fa-wallet"></i>
+                                                    Token Wallet Address *
+                                                </label>
+                                                <input 
+                                                    type="text" 
+                                                    id="token_address"
+                                                    name="token_address" 
+                                                    class="form-input" 
+                                                    placeholder="Enter your token wallet address"
+                                                    value=""
+                                                >
+                                                <div class="form-hint">Enter your campus token wallet address</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-prev" data-prev="2">
+                        <i class="fas fa-arrow-left"></i>
+                        Back
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-submit" id="submitBtn">
+                        <i class="fas fa-credit-card"></i>
+                        Pay & List Item
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add this simple modal at the end -->
+<div id="paymentProcessingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #0a0f1c; border-radius: var(--radius); border: 1px solid #2d3748; padding: 2rem; text-align: center; max-width: 400px; width: 90%;">
+        <div style="width: 40px; height: 40px; border: 4px solid #2d3748; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+        <h3 style="color: #e5e7eb; margin-bottom: 0.5rem;">Processing Payment</h3>
+        <p id="paymentStatusText" style="color: #9ca3af; margin-bottom: 0.5rem;">Initiating M-Pesa payment...</p>
+        <p style="color: #6b7280; font-size: 0.875rem; font-style: italic;">Please check your phone to complete the payment</p>
+    </div>
+</div>
+
+<style>
+    .create-product-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .create-header {
+        background: linear-gradient(135deg, #0a0f1c 0%, #111827 100%);
+        padding: 2rem;
+        border-radius: var(--radius);
+        border: 1px solid #2d3748;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #e5e7eb;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-title i {
+        color: var(--primary);
+    }
+
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: #9ca3af;
+    }
+
+    .create-wizard {
+        background: #0a0f1c;
+        border-radius: var(--radius);
+        border: 1px solid #2d3748;
+        overflow: hidden;
+    }
+
+    /* EXTRA SMALL COMPACT WIZARD STEPS - PERFECTLY ALIGNED */
+    .wizard-steps {
+        display: flex;
+        background: #111827;
+        border-bottom: 1px solid #2d3748;
+        padding: 0.75rem;
+        gap: 0.5rem;
+        justify-content: space-between;
+        align-items: stretch;
+    }
+
+    .wizard-steps .step {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        flex: 1;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        min-width: 0; /* Prevents squeezing */
+        position: relative;
+    }
+
+    .wizard-steps .step:not(.active) {
+        background: rgba(55, 65, 81, 0.3);
+        border: 1px solid #374151;
+    }
+
+    .wizard-steps .step.active {
+        background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        border: 1px solid var(--primary);
+    }
+
+    .wizard-steps .step.active .step-number {
+        background: white;
+        color: var(--primary);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transform: scale(1.1);
+    }
+
+    .wizard-steps .step.active .step-title {
+        color: white;
+        font-weight: 600;
+    }
+
+    .wizard-steps .step.active .step-desc {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .wizard-steps .step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #4b5563;
+        color: #d1d5db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        border: 2px solid transparent;
+    }
+
+    .wizard-steps .step:not(.active) .step-number {
+        background: #374151;
+        color: #9ca3af;
+        border: 2px solid #4b5563;
+    }
+
+    .step-info {
+        flex: 1;
+        min-width: 0; /* Crucial for text truncation */
+    }
+
+    .step-title {
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 0.25rem;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+    }
+
+    .step-desc {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+    }
+
+    /* Color variations for better visual distinction */
+    .wizard-steps .step[data-step="1"]:not(.active):hover {
+        background: rgba(79, 70, 229, 0.15);
+        border-color: rgba(79, 70, 229, 0.4);
+    }
+
+    .wizard-steps .step[data-step="2"]:not(.active):hover {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .wizard-steps .step[data-step="3"]:not(.active):hover {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    /* Progress connector lines */
+    .wizard-steps .step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: -0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 20px;
+        background: linear-gradient(to bottom, transparent, #4b5563, transparent);
+        opacity: 0.5;
+    }
+
+    .wizard-steps .step.active:not(:last-child)::after {
+        background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+        opacity: 0.7;
+    }
+
+    .product-form {
+        padding: 2rem;
+    }
+
+    .form-step {
+        display: none;
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.3s ease;
+    }
+
+    .form-step.active {
+        display: block;
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .step-content {
+        margin-bottom: 2rem;
+    }
+
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary);
+        white-space: normal;
+        overflow: visible;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .form-label i {
+        color: var(--primary);
+        width: 16px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: #111827;
+        border: 2px solid #2d3748;
+        border-radius: var(--radius);
+        color: #e5e7eb;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: #6b7280;
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-hint {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+
+    .image-upload-container {
+        margin-top: 0.5rem;
+    }
+
+    .upload-area {
+        border: 2px dashed #2d3748;
+        border-radius: var(--radius);
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .upload-area:hover {
+        border-color: var(--primary);
+        background: #111827;
+    }
+
+    .upload-area i {
+        font-size: 3rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+
+    .upload-area h4 {
+        color: #e5e7eb;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-area p {
+        color: #9ca3af;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-hint {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .image-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .preview-item {
+        position: relative;
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1px solid #2d3748;
+    }
+
+    .preview-item img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .remove-image {
+        position: absolute;
+        top: 0.25rem;
+        right: 0.25rem;
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.75rem;
+    }
+
+    .price-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .currency-symbol {
+        position: absolute;
+        left: 1rem;
+        color: #9ca3af;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .price-input {
+        padding-left: 3.5rem !important;
+    }
+
+    .discount-options, .delivery-options, .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .radio-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #111827;
+        border: 2px solid #2d3748;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .radio-container:hover {
+        border-color: var(--primary);
+        background: #1f2937;
+    }
+
+    .radio-container input:checked + .radio-checkmark {
+        border-color: var(--primary);
+        background: var(--primary);
+    }
+
+    .radio-container input:checked + .radio-checkmark::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+    }
+
+    .radio-checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #4b5563;
+        border-radius: 50%;
+        position: relative;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+    }
+
+    .option-content {
+        flex: 1;
+    }
+
+    .option-title {
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .option-desc {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-bottom: 0.5rem;
+    }
+
+    .option-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        color: var(--primary);
+    }
+
+    .option-info i {
+        font-size: 1rem;
+    }
+
+    .option-fields {
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .radio-container input:checked ~ .option-content .option-fields {
+        display: block;
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #111827;
+        border: 2px solid #2d3748;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .checkbox-container:hover {
+        border-color: var(--primary);
+        background: #1f2937;
+    }
+
+    .checkbox-container input:checked + .checkmark {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .checkbox-container input:checked + .checkmark::after {
+        content: '✓';
+        position: absolute;
+        color: white;
+        font-size: 12px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #4b5563;
+        border-radius: 4px;
+        position: relative;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+    }
+
+    .checkbox-content {
+        flex: 1;
+    }
+
+    .checkbox-title {
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 0.25rem;
+    }
+
+    .checkbox-desc {
+        font-size: 0.875rem;
+        color: #9ca3af;
+    }
+
+    .review-summary {
+        background: #111827;
+        border-radius: var(--radius);
+        border: 1px solid #2d3748;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .review-section {
+        margin-bottom: 2rem;
+    }
+
+    .review-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .review-section h4 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+    }
+
+    .review-item {
+        display: flex;
+        margin-bottom: 0.75rem;
+    }
+
+    .review-label {
+        font-weight: 600;
+        color: #e5e7eb;
+        min-width: 120px;
+    }
+
+    .review-value {
+        color: #9ca3af;
+        flex: 1;
+    }
+
+    .payment-section {
+        background: #111827;
+        border-radius: var(--radius);
+        border: 1px solid #2d3748;
+        padding: 2rem;
+    }
+
+    .payment-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .payment-header i {
+        font-size: 2rem;
+        color: var(--success);
+    }
+
+    .payment-header h4 {
+        color: #e5e7eb;
+        margin: 0;
+    }
+
+    .payment-desc {
+        color: #9ca3af;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .step-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 2rem;
+        border-top: 1px solid #2d3748;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .btn-prev {
+        background: #374151;
+        color: #e5e7eb;
+    }
+
+    .btn-prev:hover {
+        background: #4b5563;
+    }
+
+    .btn-next, .btn-submit {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-next:hover, .btn-submit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+    }
+
+    .btn-submit {
+        background: var(--success);
+    }
+
+    .btn-submit:hover {
+        background: #059669;
+    }
+
+    /* Responsive Design - Optimized for compact steps */
+    @media (max-width: 768px) {
+        .create-product-container {
+            padding: 1rem;
+        }
+
+        .create-header {
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .wizard-steps {
+            padding: 0.5rem;
+            gap: 0.25rem;
+        }
+
+        .wizard-steps .step {
+            padding: 0.5rem 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .wizard-steps .step-number {
+            width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
+        }
+
+        .step-title {
+            font-size: 0.8rem;
+        }
+
+        .step-desc {
+            font-size: 0.7rem;
+        }
+
+        .wizard-steps .step:not(:last-child)::after {
+            right: -0.25rem;
+            height: 16px;
+        }
+
+        .product-form {
+            padding: 1.5rem;
+        }
+
+        .step-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* EXTRA SMALL SCREENS - FIX FOR STEP 3 OVERLAPPING */
+    @media (max-width: 480px) {
+        .wizard-steps {
+            overflow-x: auto;
+            padding-bottom: 0.75rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .wizard-steps .step {
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 0.75rem;
+        }
+
+        .step-desc {
+            font-size: 0.65rem;
+        }
+
+        .radio-container, .checkbox-container {
+            padding: 1rem;
+        }
+
+        .review-item {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .review-label {
+            min-width: auto;
+        }
+
+        /* Fix for payment options on small screens */
+        .payment-options .radio-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .payment-options .option-content {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .wizard-steps .step {
+            min-width: 90px;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .step-title {
+            font-size: 0.7rem;
+        }
+
+        .step-desc {
+            font-size: 0.6rem;
+        }
+    }
+
+    /* Animation */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Ensure all form elements are properly styled */
+    .form-input, .form-select, .form-textarea {
+        background: #111827 !important;
+        border: 2px solid #2d3748 !important;
+        color: #e5e7eb !important;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Product creation page loaded');
+        
+        // ALL YOUR EXISTING JAVASCRIPT CODE REMAINS EXACTLY THE SAME
+        // Initialize steps - show only first step, hide others
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach((step, index) => {
+            if (index === 0) {
+                step.style.display = 'block';
+                step.classList.add('active');
+            } else {
+                step.style.display = 'none';
+                step.classList.remove('active');
+            }
+        });
+
+        // Wizard navigation
+        const stepButtons = document.querySelectorAll('.wizard-steps .step');
+        
+        // Next button functionality
+        document.querySelectorAll('.btn-next').forEach(button => {
+            button.addEventListener('click', function() {
+                const currentStep = this.closest('.form-step');
+                const currentStepNum = currentStep.dataset.step;
+                const nextStepNum = this.dataset.next;
+                const nextStep = document.querySelector(`.form-step[data-step="${nextStepNum}"]`);
+                
+                console.log('Moving from step', currentStepNum, 'to step', nextStepNum);
+                
+                if (validateStep(currentStepNum)) {
+                    console.log('Validation passed, moving to next step');
+                    
+                    // Hide current step
+                    currentStep.style.display = 'none';
+                    currentStep.classList.remove('active');
+                    
+                    // Show next step
+                    if (nextStep) {
+                        nextStep.style.display = 'block';
+                        nextStep.classList.add('active');
+                    }
+                    
+                    // Update wizard steps
+                    stepButtons.forEach(step => {
+                        if (parseInt(step.dataset.step) <= parseInt(nextStepNum)) {
+                            step.classList.add('active');
+                        } else {
+                            step.classList.remove('active');
+                        }
+                    });
+                    
+                    // Update review summary when reaching step 3
+                    if (nextStepNum === '3') {
+                        console.log('Updating review summary');
+                        updateReviewSummary();
+                    }
+                } else {
+                    console.log('Validation failed for step', currentStepNum);
+                }
+            });
+        });
+        
+        // Previous button functionality
+        document.querySelectorAll('.btn-prev').forEach(button => {
+            button.addEventListener('click', function() {
+                const currentStep = this.closest('.form-step');
+                const prevStepNum = this.dataset.prev;
+                const prevStep = document.querySelector(`.form-step[data-step="${prevStepNum}"]`);
+                
+                console.log('Moving back to step', prevStepNum);
+                
+                // Hide current step
+                currentStep.style.display = 'none';
+                currentStep.classList.remove('active');
+                
+                // Show previous step
+                if (prevStep) {
+                    prevStep.style.display = 'block';
+                    prevStep.classList.add('active');
+                }
+                
+                // Update wizard steps
+                stepButtons.forEach(step => {
+                    if (parseInt(step.dataset.step) <= parseInt(prevStepNum)) {
+                        step.classList.add('active');
+                    } else {
+                        step.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        // Image upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        console.log('Image upload elements:', { uploadArea, fileInput, imagePreview });
+        
+        if (uploadArea && fileInput) {
+            // Click to upload
+            uploadArea.addEventListener('click', function(e) {
+                // Don't trigger if clicking on the file input itself
+                if (e.target !== fileInput) {
+                    fileInput.click();
+                }
+            });
+            
+            // Drag and drop functionality
+            ['dragover', 'dragenter'].forEach(event => {
+                uploadArea.addEventListener(event, function(e) {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = 'var(--primary)';
+                    uploadArea.style.background = '#111827';
+                });
+            });
+            
+            ['dragleave', 'dragend', 'drop'].forEach(event => {
+                uploadArea.addEventListener(event, function(e) {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#2d3748';
+                    uploadArea.style.background = 'transparent';
+                });
+            });
+            
+            // Handle file drop
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const files = e.dataTransfer.files;
+                console.log('Files dropped:', files);
+                if (files.length > 0) {
+                    handleImageUpload(files[0]);
+                }
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                console.log('File input changed:', e.target.files);
+                if (e.target.files.length > 0) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        function handleImageUpload(file) {
+    console.log('Handling image upload:', file);
+    
+    if (!file) {
+        console.log('No file provided');
+        return;
+    }
+    
+    // Check if it's an image
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (JPEG, PNG, GIF, etc.)');
+        return;
+    }
+    
+    // Check file size (5MB limit)
+    if (file.size > 15 * 1024 * 1024) {
+        alert('Image size must be less than 15MB. Your file is ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+        return;
+    }
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        console.log('File read successfully');
+        
+        // Clear previous previews
+        const imagePreview = document.getElementById('imagePreview');
+        if (imagePreview) {
+            imagePreview.innerHTML = '';
+        }
+        
+        // Create preview container
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
+        previewItem.innerHTML = `
+            <img src="${e.target.result}" alt="Product preview">
+            <button type="button" class="remove-image" title="Remove image">&times;</button>
+        `;
+        
+        // Add to preview area
+        if (imagePreview) {
+            imagePreview.appendChild(previewItem);
+        }
+        
+        // Update upload area text to show success
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.querySelector('h4').textContent = 'Image Uploaded Successfully';
+            uploadArea.querySelector('p').textContent = 'Click or drag to change image';
+            uploadArea.style.borderColor = 'var(--success)';
+        }
+        
+        // FIXED: Ensure the file is properly set on the input
+        // Create a new DataTransfer to set the file properly
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        const fileInput = document.getElementById('image');
+        if (fileInput) {
+            fileInput.files = dataTransfer.files;
+            console.log('File input updated with file:', fileInput.files);
+        }
+        
+        // Add remove functionality
+        const removeButton = previewItem.querySelector('.remove-image');
+        removeButton.addEventListener('click', function() {
+            console.log('Removing image');
+            previewItem.remove();
+            const fileInput = document.getElementById('image');
+            if (fileInput) {
+                fileInput.value = '';
+                console.log('File input cleared');
+            }
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) {
+                uploadArea.querySelector('h4').textContent = 'Upload Product Images';
+                uploadArea.querySelector('p').textContent = 'Drag & drop images or click to browse';
+                uploadArea.style.borderColor = '#2d3748';
+            }
+        });
+    };
+    
+    reader.onerror = function() {
+        console.error('Error reading file');
+        alert('Error reading the image file. Please try again.');
+    };
+    
+    reader.readAsDataURL(file);
+}
+        
+        // Character count for description
+        const descriptionTextarea = document.getElementById('description');
+        const charCount = document.getElementById('charCount');
+        
+        if (descriptionTextarea && charCount) {
+            descriptionTextarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+            
+            // Initialize character count
+            charCount.textContent = descriptionTextarea.value.length;
+        }
+        
+        // Delivery option fields toggle
+        // M-Pesa phone field toggle
+        const paymentOptions = document.querySelectorAll('input[name="payment_method"]');
+        paymentOptions.forEach(option => {
+            option.addEventListener('change', function() {
+                console.log('Payment option changed:', this.value);
+                
+                // Hide all payment fields by default
+                const mpesaFields = document.getElementById('mpesaFields');
+                const tokenFields = document.getElementById('tokenFields');
+                
+                if (mpesaFields) {
+                    mpesaFields.style.display = 'none';
+                    // Clear required attribute when hidden
+                    const mpesaPhone = document.getElementById('mpesa_phone');
+                    if (mpesaPhone) {
+                        mpesaPhone.removeAttribute('required');
+                    }
+                }
+                
+                if (tokenFields) {
+                    tokenFields.style.display = 'none';
+                    // Clear required attribute when hidden
+                    const tokenAddress = document.getElementById('token_address');
+                    if (tokenAddress) {
+                        tokenAddress.removeAttribute('required');
+                    }
+                }
+                
+                // Show appropriate fields based on selection
+                if (this.value === 'mpesa') {
+                    if (mpesaFields) {
+                        mpesaFields.style.display = 'block';
+                        const mpesaPhone = document.getElementById('mpesa_phone');
+                        if (mpesaPhone) {
+                            mpesaPhone.setAttribute('required', 'required');
+                        }
+                    }
+                } else if (this.value === 'token') {
+                    if (tokenFields) {
+                        tokenFields.style.display = 'block';
+                        const tokenAddress = document.getElementById('token_address');
+                        if (tokenAddress) {
+                            tokenAddress.setAttribute('required', 'required');
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Form validation
+        function validateStep(step) {
+            console.log('Validating step:', step);
+            
+            switch(step) {
+                case '1':
+                    const title = document.getElementById('title');
+                    const category = document.getElementById('category_id');
+                    const condition = document.getElementById('condition');
+                    const image = document.getElementById('image');
+                    const description = document.getElementById('description');
+                    
+                    console.log('Form values:', {
+                        title: title?.value,
+                        category: category?.value,
+                        condition: condition?.value,
+                        image: image?.files,
+                        description: description?.value
+                    });
+                    
+                    if (!title || !title.value.trim()) {
+                        alert('Please enter a product title');
+                        if (title) title.focus();
+                        return false;
+                    }
+                    
+                    if (!category || !category.value) {
+                        alert('Please select a category');
+                        if (category) category.focus();
+                        return false;
+                    }
+                    
+                    if (!condition || !condition.value) {
+                        alert('Please select the product condition');
+                        if (condition) condition.focus();
+                        return false;
+                    }
+                    
+                    // FIXED: Better image validation that checks both file input and preview
+                    if (!image) {
+                        alert('Image upload field not found');
+                        return false;
+                    }
+                    
+                    const hasFiles = image.files && image.files.length > 0;
+                    const hasPreview = document.querySelector('.preview-item img') !== null;
+                    
+                    console.log('Image validation:', { hasFiles, hasPreview, files: image.files });
+                    
+                    if (!hasFiles && !hasPreview) {
+                        alert('Please upload at least one product image');
+                        return false;
+                    }
+                    
+                    // If there's a preview but no files (might happen with drag/drop), 
+                    // we need to ensure the file is still attached to the input
+                    if (hasPreview && !hasFiles) {
+                        alert('Please re-upload your image or try a different file');
+                        return false;
+                    }
+                    
+                    // Validate the actual file
+                    if (hasFiles) {
+                        const file = image.files[0];
+                        if (!file.type.startsWith('image/')) {
+                            alert('Please select a valid image file (JPEG, PNG, GIF, etc.)');
+                            return false;
+                        }
+                        
+                        if (file.size > 15 * 1024 * 1024) {
+                            alert('Image size must be less than 15MB. Your file is ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                            return false;
+                        }
+                    }
+                    
+                    if (!description || !description.value.trim()) {
+                        alert('Please enter a product description');
+                        if (description) description.focus();
+                        return false;
+                    }
+                    
+                    console.log('Step 1 validation passed');
+                    return true;
+                    
+                case '2':
+                    const price = document.getElementById('price');
+                    const deliveryOption = document.querySelector('input[name="delivery_option"]:checked');
+                    
+                    console.log('Step 2 values:', {
+                        price: price?.value,
+                        deliveryOption: deliveryOption?.value
+                    });
+                    
+                    if (!price || !price.value || parseFloat(price.value) <= 0) {
+                        alert('Please enter a valid price');
+                        if (price) price.focus();
+                        return false;
+                    }
+                    
+                    if (!deliveryOption) {
+                        alert('Please select a delivery option');
+                        return false;
+                    }
+                    
+                    // Validate delivery-specific fields
+                    if (deliveryOption.value === 'free') {
+                        const deliveryAddress = document.querySelector('input[name="delivery_address"]');
+                        if (!deliveryAddress || !deliveryAddress.value.trim()) {
+                            alert('Please provide your wallet address or M-Pesa number for free delivery');
+                            if (deliveryAddress) deliveryAddress.focus();
+                            return false;
+                        }
+                    } else if (deliveryOption.value === 'paid') {
+                        const deliveryFee = document.querySelector('input[name="delivery_fee"]');
+                        if (!deliveryFee || !deliveryFee.value || parseFloat(deliveryFee.value) < 0) {
+                            alert('Please enter a valid delivery fee');
+                            if (deliveryFee) deliveryFee.focus();
+                            return false;
+                        }
+                    }
+                    
+                    console.log('Step 2 validation passed');
+                    return true;
+                    
+                case '3':
+                    const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+                    if (!paymentMethod) {
+                        alert('Please select a payment method');
+                        return false;
+                    }
+                    
+                    // If M-Pesa selected, validate phone number
+                    if (paymentMethod.value === 'mpesa') {
+                        const mpesaPhone = document.getElementById('mpesa_phone');
+                        if (!mpesaPhone || !mpesaPhone.value.trim()) {
+                            alert('Please enter your M-Pesa phone number');
+                            if (mpesaPhone) mpesaPhone.focus();
+                            return false;
+                        }
+                        
+                        const phoneRegex = /^[0-9]{10,12}$/;
+                        if (!phoneRegex.test(mpesaPhone.value.replace(/\s+/g, ''))) {
+                            alert('Please enter a valid phone number (10-12 digits)');
+                            if (mpesaPhone) mpesaPhone.focus();
+                            return false;
+                        }
+                    }
+                    
+                    // If Token selected, validate token address
+                    if (paymentMethod.value === 'token') {
+                        const tokenAddress = document.getElementById('token_address');
+                        if (!tokenAddress || !tokenAddress.value.trim()) {
+                            alert('Please enter your token wallet address');
+                            if (tokenAddress) tokenAddress.focus();
+                            return false;
+                        }
+                    }
+                    
+                    console.log('Step 3 validation passed');
+                    return true;
+                    
+                default:
+                    return true;
+            }
+        }
+        
+        // Update review summary
+        function updateReviewSummary() {
+            console.log('Updating review summary...');
+            
+            // Product details
+            const title = document.getElementById('title');
+            const category = document.getElementById('category_id');
+            const condition = document.getElementById('condition');
+            const description = document.getElementById('description');
+            
+            if (title) {
+                const reviewTitle = document.getElementById('review-title');
+                if (reviewTitle) reviewTitle.textContent = title.value || '-';
+            }
+            if (category) {
+                const reviewCategory = document.getElementById('review-category');
+                if (reviewCategory) reviewCategory.textContent = category.options[category.selectedIndex]?.text || '-';
+            }
+            if (condition) {
+                const reviewCondition = document.getElementById('review-condition');
+                if (reviewCondition) reviewCondition.textContent = condition.options[condition.selectedIndex]?.text || '-';
+            }
+            if (description) {
+                const reviewDescription = document.getElementById('review-description');
+                if (reviewDescription) {
+                    const descText = description.value || '';
+                    reviewDescription.textContent = 
+                        descText.substring(0, 100) + (descText.length > 100 ? '...' : '');
+                }
+            }
+            
+            // Pricing & delivery
+            const price = document.getElementById('price');
+            if (price) {
+                const reviewPrice = document.getElementById('review-price');
+                if (reviewPrice) {
+                    reviewPrice.textContent = 
+                        'KES ' + (price.value ? parseFloat(price.value).toLocaleString() : '-');
+                }
+            }
+            
+            const tokenDiscount = document.querySelector('input[name="token_discount"]:checked');
+            const reviewDiscount = document.getElementById('review-discount');
+            if (reviewDiscount) {
+                reviewDiscount.textContent = 
+                    tokenDiscount ? (tokenDiscount.value === 'none' ? 'No discount' : tokenDiscount.value + '% discount') : '-';
+            }
+            
+            const deliveryOption = document.querySelector('input[name="delivery_option"]:checked');
+            const reviewDelivery = document.getElementById('review-delivery');
+            if (reviewDelivery) {
+                let deliveryText = '-';
+                if (deliveryOption) {
+                    switch(deliveryOption.value) {
+                        case 'free':
+                            deliveryText = 'Free Delivery';
+                            break;
+                        case 'meetup':
+                            deliveryText = 'Campus Meetup';
+                            break;
+                        case 'paid':
+                            deliveryText = 'Paid Delivery';
+                            break;
+                    }
+                }
+                reviewDelivery.textContent = deliveryText;
+            }
+            
+            console.log('Review summary updated');
+        }
+
+        // ONLY ADD THIS NEW PAYMENT HANDLING LOGIC AT THE END:
+        
+        const productForm = document.getElementById('productForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const paymentModal = document.getElementById('paymentProcessingModal');
+        const paymentStatusText = document.getElementById('paymentStatusText');
+
+        if (productForm) {
+            productForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log('Form submission intercepted for payment');
+
+                // Validate all steps first
+                if (!validateStep('1') || !validateStep('2') || !validateStep('3')) {
+                    alert('Please complete all required fields correctly.');
+                    return;
+                }
+
+                const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+                
+                if (!paymentMethod) {
+                    alert('Please select a payment method.');
+                    return;
+                }
+
+                // Show payment processing modal for M-Pesa
+                if (paymentMethod.value === 'mpesa' && paymentModal) {
+                    paymentModal.style.display = 'flex';
+                }
+
+                // Disable submit button to prevent multiple submissions
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+
+                try {
+                    if (paymentMethod.value === 'mpesa') {
+                        await handleMpesaPayment();
+                    } else if (paymentMethod.value === 'token') {
+                        // For token payment, submit the form normally
+                        productForm.submit();
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    hidePaymentModal();
+                    alert('Payment failed: ' + error.message);
+                    enableSubmitButton();
+                }
+            });
+        }
+
+        async function handleMpesaPayment() {
+            console.log('Handling M-Pesa payment');
+
+            if (paymentStatusText) {
+                paymentStatusText.textContent = 'Initiating M-Pesa payment...';
+            }
+
+            const formData = new FormData(productForm);
+
+            try {
+                const response = await fetch('/create', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const responseText = await response.text();
+                console.log("STK Push Response:", responseText);
+
+                // ✅ Check if backend returned JSON with checkout_request_id
+                let json = null;
+                try { json = JSON.parse(responseText); } catch(e) {}
+
+                if (json && json.status === "payment_started" && json.checkout_request_id) {
+                    const checkoutID = json.checkout_request_id;
+                    console.log("✅ Payment started, redirecting to pending page:", checkoutID);
+                    
+                    // Update modal text to show confirmation phase
+                    if (paymentStatusText) {
+                        paymentStatusText.textContent = "Waiting for M-Pesa confirmation...";
+                    }
+
+                    // Wait 3 seconds before redirecting to the pending tracking page
+                    setTimeout(() => {
+                        window.location.href = `/payment-pending/${checkoutID}`;
+                    }, 3000);
+
+                    return;
+                }
+
+                // ✅ If Flask returns a redirect (rare), follow it
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                // ❌ If none of the above worked
+                hidePaymentModal();
+                enableSubmitButton();
+                alert("Failed to initiate payment. Try again.");
+
+            } catch (error) {
+                console.error('M-Pesa payment error:', error);
+                hidePaymentModal();
+                enableSubmitButton();
+                alert('Network error: ' + error.message);
+            }
+        }
+
+        function hidePaymentModal() {
+            if (paymentModal) {
+                paymentModal.style.display = 'none';
+            }
+        }
+
+        function enableSubmitButton() {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay & List Item';
+            }
+        }
+
+        // Initialize delivery option fields
+        console.log('Initializing delivery options...');
+        const initialDeliveryOption = document.querySelector('input[name="delivery_option"]:checked');
+        if (initialDeliveryOption) {
+            console.log('Found initial delivery option:', initialDeliveryOption.value);
+            initialDeliveryOption.dispatchEvent(new Event('change'));
+        } else {
+            console.log('No initial delivery option found');
+        }
+
+        // Initialize payment options
+        console.log('Initializing payment options...');
+        const initialPaymentOption = document.querySelector('input[name="payment_method"]:checked');
+        if (initialPaymentOption) {
+            console.log('Found initial payment option:', initialPaymentOption.value);
+            initialPaymentOption.dispatchEvent(new Event('change'));
+        } else {
+            console.log('No initial payment option found');
+        }
+
+        console.log('Product creation page initialization complete');
+    });
+</script>
+{% endblock %}
