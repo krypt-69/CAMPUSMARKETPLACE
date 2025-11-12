@@ -23,10 +23,10 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
     
     # M-Pesa Configuration - WITH CORRECT PASSKEY
-    app.config['MPESA_CONSUMER_KEY'] = '4wG4bdDlPrrhXJD6LO2x7BnnAgJy5ITHgFdo3i9XDtorCFoq'
-    app.config['MPESA_CONSUMER_SECRET'] = 'Z0B4Urr3fC6iZXBsNkQN6vIrmWDV6OfnvGJrS6V2xC2n9V3117PZZFn47XdYPWGK'
+    app.config['MPESA_CONSUMER_KEY'] = ''
+    app.config['MPESA_CONSUMER_SECRET'] = ''
     app.config['MPESA_SHORTCODE'] = '174379'
-    app.config['MPESA_PASSKEY'] = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
+    app.config['MPESA_PASSKEY'] = ''
     app.config['MPESA_BASE_URL'] = 'https://sandbox.safaricom.co.ke'
     app.config['BASE_URL'] = 'http://localhost:5000'
     app.config['LISTING_FEE'] = 1
